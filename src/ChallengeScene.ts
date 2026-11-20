@@ -9,6 +9,8 @@ const HIDDEN_Y = 380
 const VISIBLE_Y = 250
 const GROUND_COLOR = 0xf7f3ea
 
+type ChallengePhase = 'idle' | 'emerging' | 'waiting' | 'returning'
+
 export class ChallengeScene extends Phaser.Scene {
   private readonly startButton: HTMLButtonElement
 
@@ -29,36 +31,50 @@ export class ChallengeScene extends Phaser.Scene {
     foreground.fillRect(0, 304, 375, 71)
     foreground.fillEllipse(MOLE_X, 310, 178, 20)
 
-    let canHit = false
+    let phase: ChallengePhase = 'idle'
+    let isHit = false
+    let holdTimer: Phaser.Time.TimerEvent | undefined
 
-    const completeChallenge = () => {
-      canHit = false
-      this.startButton.textContent = 'もう一度'
-      this.startButton.disabled = false
+    const canHit = () => (
+      !isHit && (phase === 'emerging' || phase === 'waiting')
+    )
+
+    const stopCurrentMotion = () => {
+      holdTimer?.remove(false)
+      holdTimer = undefined
+      this.tweens.killTweensOf(mole)
     }
 
-    mole.setInteractive({
-      hitArea: new Phaser.Geom.Ellipse(0, 0, 120, 140),
-      hitAreaCallback: (area: Phaser.Geom.Ellipse, x: number, y: number) => (
-        canHit && y + mole.y < 300 && Phaser.Geom.Ellipse.Contains(area, x, y)
-      ),
-      useHandCursor: true,
-    })
+    const transitionTo = (nextPhase: ChallengePhase) => {
+      stopCurrentMotion()
+      phase = nextPhase
+      this.startButton.disabled = phase !== 'idle'
 
-    mole.on('pointerdown', () => {
-      if (!canHit) return
+      switch (phase) {
+        case 'idle':
+          this.startButton.textContent = 'もう一度'
+          break
 
-      canHit = false
-      this.tweens.killTweensOf(mole)
-      this.drawMole(mole, true)
-      this.tweens.add({
-        targets: mole,
-        scaleX: 1.15,
-        scaleY: 0.75,
-        duration: HIT_SQUASH_DURATION_MS,
-        hold: HIT_HOLD_DURATION_MS,
-        yoyo: true,
-        onComplete: () => {
+        case 'emerging':
+          isHit = false
+          mole.setPosition(MOLE_X, HIDDEN_Y).setScale(1)
+          this.drawMole(mole, isHit)
+          this.tweens.add({
+            targets: mole,
+            y: VISIBLE_Y,
+            duration: MOVE_DURATION_MS,
+            ease: 'Linear',
+            onComplete: () => transitionTo('waiting'),
+          })
+          break
+
+        case 'waiting':
+          holdTimer = this.time.delayedCall(HOLD_DURATION_MS, () => {
+            transitionTo('returning')
+          })
+          break
+
+        case 'returning': {
           // 出現途中で命中した場合も、残りの距離に合わせて帰還時間を決める。
           const returnDurationMs = MOVE_DURATION_MS
             * (HIDDEN_Y - mole.y) / (HIDDEN_Y - VISIBLE_Y)
@@ -68,43 +84,53 @@ export class ChallengeScene extends Phaser.Scene {
             y: HIDDEN_Y,
             duration: returnDurationMs,
             ease: 'Linear',
-            onComplete: completeChallenge,
+            onComplete: () => transitionTo('idle'),
           })
-        },
+          break
+        }
+      }
+    }
+
+    mole.setInteractive({
+      hitArea: new Phaser.Geom.Ellipse(0, 0, 120, 140),
+      hitAreaCallback: (area: Phaser.Geom.Ellipse, x: number, y: number) => (
+        canHit() && y + mole.y < 300 && Phaser.Geom.Ellipse.Contains(area, x, y)
+      ),
+      useHandCursor: true,
+    })
+
+    mole.on('pointerdown', () => {
+      if (!canHit()) return
+
+      isHit = true
+      stopCurrentMotion()
+      this.drawMole(mole, isHit)
+      this.tweens.add({
+        targets: mole,
+        scaleX: 1.15,
+        scaleY: 0.75,
+        duration: HIT_SQUASH_DURATION_MS,
+        hold: HIT_HOLD_DURATION_MS,
+        yoyo: true,
+        onComplete: () => transitionTo('returning'),
       })
     })
 
     const playChallenge = () => {
-      if (this.startButton.disabled) return
-
-      this.startButton.disabled = true
-      mole.setPosition(MOLE_X, HIDDEN_Y).setScale(1)
-      this.drawMole(mole)
-      canHit = true
-      this.tweens.add({
-        targets: mole,
-        y: VISIBLE_Y,
-        duration: MOVE_DURATION_MS,
-        ease: 'Linear',
-        hold: HOLD_DURATION_MS,
-        yoyo: true,
-        onYoyo: () => {
-          canHit = false
-        },
-        onComplete: completeChallenge,
-      })
+      if (phase === 'idle') transitionTo('emerging')
     }
 
     this.startButton.disabled = false
     this.startButton.addEventListener('click', playChallenge)
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      canHit = false
+      stopCurrentMotion()
+      mole.removeAllListeners('pointerdown')
       this.startButton.removeEventListener('click', playChallenge)
       this.startButton.disabled = true
     })
   }
 
-  private drawMole(mole: Phaser.GameObjects.Graphics, hit = false) {
+  private drawMole(mole: Phaser.GameObjects.Graphics, isHit = false) {
     mole.clear()
     mole.fillStyle(0xa97852)
     mole.fillCircle(-38, -28, 16)
@@ -115,7 +141,7 @@ export class ChallengeScene extends Phaser.Scene {
     mole.fillStyle(0x30251e)
     mole.lineStyle(3, 0x30251e)
 
-    if (hit) {
+    if (isHit) {
       for (const eyeX of [-19, 19]) {
         mole.lineBetween(eyeX - 5, -25, eyeX + 5, -15)
         mole.lineBetween(eyeX - 5, -15, eyeX + 5, -25)
