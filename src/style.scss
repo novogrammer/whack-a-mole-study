@@ -26,3 +26,48 @@ body {
   margin-inline: auto;
   background-color: var(--content-background);
 }
+
+#game {
+  width: 100%;
+  aspect-ratio: 1;
+
+  canvas {
+    display: block;
+  }
+}
+
+.challenge-controls {
+  display: flex;
+  justify-content: center;
+
+  @include global.sp-and-pc-block((
+    padding: 24px,
+  ));
+}
+
+#start-challenge {
+  @include global.sp-and-pc-block((
+    min-width: 180px,
+    min-height: 48px,
+    padding: 12px 24px,
+    border-radius: 8px,
+    font-size: 16px,
+  ));
+
+  border: 0;
+  background-color: #594336;
+  color: #fff;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  &:focus-visible {
+    outline: 3px solid #a97852;
+    outline-offset: 3px;
+  }
+}
