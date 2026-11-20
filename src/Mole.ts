@@ -2,35 +2,33 @@ import Phaser from 'phaser'
 
 const HIDDEN_OFFSET_Y = 80
 const VISIBLE_OFFSET_Y = -50
+const DISPLAY_SCALE = 0.75
 const GROUND_COLOR = 0xf7f3ea
 
 export class Mole {
   private readonly scene: Phaser.Scene
-  private readonly x: number
-  private readonly holeY: number
+  private readonly container: Phaser.GameObjects.Container
   private readonly graphics: Phaser.GameObjects.Graphics
-  private readonly hole: Phaser.GameObjects.Ellipse
-  private readonly foreground: Phaser.GameObjects.Graphics
   private tapHandler: (() => void) | undefined
 
   constructor(scene: Phaser.Scene, x: number, holeY: number) {
     this.scene = scene
-    this.x = x
-    this.holeY = holeY
-    this.hole = scene.add.ellipse(x, holeY, 166, 40, 0x594336)
-    this.graphics = scene.add.graphics({ x, y: holeY + HIDDEN_OFFSET_Y })
+    this.container = scene.add.container(x, holeY).setScale(DISPLAY_SCALE).setDepth(holeY)
+    const hole = scene.add.ellipse(0, 0, 166, 40, 0x594336)
+    this.graphics = scene.add.graphics({ x: 0, y: HIDDEN_OFFSET_Y })
     this.drawMole(this.graphics)
 
     // 手前の地面で、穴より下のモグラを隠す。
-    this.foreground = scene.add.graphics()
-    this.foreground.fillStyle(GROUND_COLOR)
-    this.foreground.fillRect(x - 100, holeY + 4, 200, 71)
-    this.foreground.fillEllipse(x, holeY + 10, 178, 20)
+    const foreground = scene.add.graphics()
+    foreground.fillStyle(GROUND_COLOR)
+    foreground.fillRect(-100, 4, 200, 160)
+    foreground.fillEllipse(0, 10, 178, 20)
+    this.container.add([hole, this.graphics, foreground])
 
     this.graphics.setInteractive({
       hitArea: new Phaser.Geom.Ellipse(0, 0, 120, 140),
       hitAreaCallback: (area: Phaser.Geom.Ellipse, localX: number, localY: number) => (
-        localY + this.graphics.y < this.holeY
+        localY + this.graphics.y < 0
         && Phaser.Geom.Ellipse.Contains(area, localX, localY)
       ),
       useHandCursor: true,
@@ -41,14 +39,14 @@ export class Mole {
   emerge(durationMs: number, onTap: () => void) {
     this.unregisterTap()
     this.scene.tweens.killTweensOf(this.graphics)
-    this.graphics.setPosition(this.x, this.holeY + HIDDEN_OFFSET_Y).setScale(1)
+    this.graphics.setPosition(0, HIDDEN_OFFSET_Y).setScale(1)
     this.drawMole(this.graphics)
     this.tapHandler = onTap
     this.graphics.on('pointerdown', this.tapHandler)
     this.graphics.setInteractive()
     this.scene.tweens.add({
       targets: this.graphics,
-      y: this.holeY + VISIBLE_OFFSET_Y,
+      y: VISIBLE_OFFSET_Y,
       duration: durationMs,
       ease: 'Linear',
     })
@@ -56,7 +54,7 @@ export class Mole {
 
   hold() {
     this.scene.tweens.killTweensOf(this.graphics)
-    this.graphics.setY(this.holeY + VISIBLE_OFFSET_Y)
+    this.graphics.setY(VISIBLE_OFFSET_Y)
   }
 
   showHitReaction(squashDurationMs: number, holdDurationMs: number) {
@@ -79,7 +77,7 @@ export class Mole {
     this.graphics.setScale(1)
     this.scene.tweens.add({
       targets: this.graphics,
-      y: this.holeY + HIDDEN_OFFSET_Y,
+      y: HIDDEN_OFFSET_Y,
       duration: durationMs,
       ease: 'Linear',
     })
@@ -88,15 +86,13 @@ export class Mole {
   hide() {
     this.unregisterTap()
     this.scene.tweens.killTweensOf(this.graphics)
-    this.graphics.setY(this.holeY + HIDDEN_OFFSET_Y)
+    this.graphics.setY(HIDDEN_OFFSET_Y)
   }
 
   destroy() {
     this.unregisterTap()
     this.scene.tweens.killTweensOf(this.graphics)
-    this.graphics.destroy()
-    this.hole.destroy()
-    this.foreground.destroy()
+    this.container.destroy()
   }
 
   private unregisterTap() {

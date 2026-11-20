@@ -1,22 +1,20 @@
 import Phaser from 'phaser'
 import { Challenge } from './Challenge'
-import type { ChallengeContext, ChallengeParams } from './Challenge'
+import type { ChallengeContext } from './Challenge'
 import { Mole } from './Mole'
+import { generateChallengeSchedule } from './generateChallengeSchedule'
 
 const MOVE_DURATION_MS = 150
 const HOLD_DURATION_MS = 1_000
 const HIT_SQUASH_DURATION_MS = 90
 const HIT_HOLD_DURATION_MS = 120
 
-const MOLE_POSITIONS = [{ x: 187.5, y: 300 }]
-const CHALLENGE_PARAMS: ChallengeParams[] = [{
-  startAtMs: 0,
-  moleIndex: 0,
-  moveDurationMs: MOVE_DURATION_MS,
-  holdDurationMs: HOLD_DURATION_MS,
-  hitSquashDurationMs: HIT_SQUASH_DURATION_MS,
-  hitHoldDurationMs: HIT_HOLD_DURATION_MS,
-}]
+const PLAY_DURATION_MS = 30_000
+const CHALLENGE_COUNT = 30
+const MOLE_POSITIONS = Array.from({ length: 9 }, (_, index) => ({
+  x: 62.5 + (index % 3) * 125,
+  y: 145 + Math.floor(index / 3) * 75,
+}))
 
 export class ChallengeScene extends Phaser.Scene implements ChallengeContext {
   private readonly startButton: HTMLButtonElement
@@ -31,15 +29,13 @@ export class ChallengeScene extends Phaser.Scene implements ChallengeContext {
 
   create() {
     this.moles = MOLE_POSITIONS.map(({ x, y }) => new Mole(this, x, y))
-    this.challenges = this.createChallenges()
+    this.challenges = []
     this.playStartedAtMs = undefined
 
     const playChallenge = () => {
       if (this.playStartedAtMs !== undefined) return
 
-      if (this.challenges.every(challenge => challenge.phase === 'completed')) {
-        this.challenges = this.createChallenges()
-      }
+      this.challenges = this.createChallenges()
       this.startButton.disabled = true
       this.playStartedAtMs = this.time.now
       this.update()
@@ -62,7 +58,7 @@ export class ChallengeScene extends Phaser.Scene implements ChallengeContext {
     const elapsedMs = this.time.now - this.playStartedAtMs
     for (const challenge of this.challenges) challenge.onUpdate(elapsedMs)
 
-    if (this.challenges.every(challenge => challenge.phase === 'completed')) {
+    if (elapsedMs >= PLAY_DURATION_MS) {
       this.playStartedAtMs = undefined
       this.startButton.textContent = 'もう一度'
       this.startButton.disabled = false
@@ -93,6 +89,17 @@ export class ChallengeScene extends Phaser.Scene implements ChallengeContext {
   }
 
   private createChallenges() {
-    return CHALLENGE_PARAMS.map(params => new Challenge(this, params))
+    const challengeParams = generateChallengeSchedule({
+      playDurationMs: PLAY_DURATION_MS,
+      moleCount: this.moles.length,
+      challengeCount: CHALLENGE_COUNT,
+      timing: {
+        moveDurationMs: MOVE_DURATION_MS,
+        holdDurationMs: HOLD_DURATION_MS,
+        hitSquashDurationMs: HIT_SQUASH_DURATION_MS,
+        hitHoldDurationMs: HIT_HOLD_DURATION_MS,
+      },
+    })
+    return challengeParams.map(params => new Challenge(this, params))
   }
 }
