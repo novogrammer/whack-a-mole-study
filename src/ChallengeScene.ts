@@ -1,7 +1,7 @@
 import Phaser from 'phaser'
 
-const MOVE_DURATION = 150
-const HOLD_DURATION = 1_000
+const MOVE_DURATION_MS = 150
+const HOLD_DURATION_MS = 1_000
 const MOLE_X = 187.5
 const HIDDEN_Y = 380
 const VISIBLE_Y = 250
@@ -46,9 +46,9 @@ export class ChallengeScene extends Phaser.Scene {
       this.tweens.add({
         targets: mole,
         y: VISIBLE_Y,
-        duration: MOVE_DURATION,
+        duration: MOVE_DURATION_MS,
         ease: 'Linear',
-        hold: HOLD_DURATION,
+        hold: HOLD_DURATION_MS,
         yoyo: true,
         onComplete: () => {
           this.startButton.textContent = 'もう一度'
