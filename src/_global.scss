@@ -1,0 +1,62 @@
+@use "sass:list";
+@use "sass:math";
+@use "sass:meta";
+
+$break-width-pc: 768px;
+$design-width-sp: 375px;
+$content-width-pc: 500px;
+$px-to-vw-sp: math.div(100vw, $design-width-sp);
+$sp-to-pc-scale: math.div($content-width-pc, $design-width-sp);
+
+@mixin mq-pc() {
+  @media screen and (min-width: $break-width-pc) {
+    @content;
+  }
+}
+
+@function to-list($val) {
+  @if meta.type-of($val) == "list" {
+    @return $val;
+  }
+  @return ($val);
+}
+
+@function px-to-sp($px-in-sp) {
+  @return $px-in-sp * $px-to-vw-sp;
+}
+
+@function px-to-pc($px-in-sp) {
+  @return $px-in-sp * $sp-to-pc-scale;
+}
+
+// 中央コンテンツ用。SPデザインのpx値からSPのvwとPCのpxを生成する。
+@mixin sp-and-pc-block($props) {
+  @each $prop-name, $value in $props {
+    @each $px-in-sp in to-list($value) {
+      @if meta.type-of($px-in-sp) != "number" {
+        @error "Invalid value `#{$px-in-sp}` for `#{$prop-name}`; must be a number with unit px.";
+      }
+      @if math.unit($px-in-sp) != "px" {
+        @error "Invalid unit `#{math.unit($px-in-sp)}` for `#{$prop-name}`; only `px` is allowed.";
+      }
+    }
+  }
+
+  @each $prop-name, $value in $props {
+    $computed-list: ();
+    @each $px-in-sp in to-list($value) {
+      $computed-list: list.append($computed-list, px-to-sp($px-in-sp));
+    }
+    #{$prop-name}: $computed-list;
+  }
+
+  @include mq-pc() {
+    @each $prop-name, $value in $props {
+      $computed-list: ();
+      @each $px-in-sp in to-list($value) {
+        $computed-list: list.append($computed-list, px-to-pc($px-in-sp));
+      }
+      #{$prop-name}: $computed-list;
+    }
+  }
+}
