@@ -116,15 +116,15 @@ Phaserのゲーム座標も幅375を基準にする案とし、盤面全体を�
 
 プレイとチャレンジの状態を整理し、描画やアニメーションへ反映する。時間や間隔は調整しやすい定数にまとめ、試作に合った小さな構成から始める。
 
-初期化時に設定配列を`challengeParams.map(params => new Challenge(params))`の形でインスタンス化し、`challenges`を1プレイの進行表として持つ。現在は開始時刻`startAtMs: 0`の設定1件、1マス・1回の構成とする。
+初期化時に設定配列を`challengeParams.map(params => new Challenge(this, params))`の形でインスタンス化し、`challenges`を1プレイの進行表として持つ。現在は開始時刻`startAtMs: 0`の設定1件、1マス・1回の構成とする。
 
 `Challenge`クラスが進行段階の`phase`と、命中済みかを表す`isHit`を管理する。`phase`は`idle`（開始前）、`emerging`（出現中）、`waiting`（停止中）、`returning`（帰還中）、`completed`（完了）とする。完了後も命中結果を保持し、再実行時は同じ設定から配列を作り直す。
 
-Sceneはプレイの経過時間を各`Challenge`へ渡し、開始時刻に達したものを進める。モグラへの入力と動作完了も通知し、`Challenge`の状態に応じて描画・Tween・タイマーを制御する。
+Sceneは`ChallengeContext`を実装し、各`Challenge`に`onUpdate(elapsedMs)`で時間、`onTap(elapsedMs)`でタップを渡す。`Challenge`自身が時間と入力から進行を決め、Contextの`emergeMole()`・`holdMole()`・`showHitReaction()`・`returnMole()`・`hideMole()`を呼んで演出を依頼する。Sceneは描画とTweenを担当する。
 
-`canHit()`は「出現中または停止中、かつ未命中」を判定する。命中時は`isHit`を更新し、その時点の`phase`のまま移動と停止タイマーを止めてリアクションを返し、終わったら帰還へ進む。
+`canHit()`は「出現中または停止中、かつ未命中」を判定する。命中時は`isHit`を更新し、その時点の`phase`のまま通常の進行と移動を止めてリアクションを返し、終わったら帰還へ進む。
 
-出現と帰還は独立したTween、停止中はタイマーで表現する。進行段階の切り替えや命中時には直前のTweenとタイマーを解除する。命中時のつぶれて元に戻る動きにはTweenの`yoyo`を使用する。
+出現・停止・命中リアクション・帰還の時間は`Challenge`側で管理し、SceneのTween完了通知で状態を操作しない。Sceneは演出の依頼を受ける際に直前のTweenを解除し、出現と帰還は独立したTween、命中時のつぶれて元に戻る動きはTweenの`yoyo`で表現する。
 
 ## 7. これから相談すること
 
