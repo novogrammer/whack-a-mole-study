@@ -1,4 +1,6 @@
 import Phaser from 'phaser'
+import { Challenge } from './Challenge'
+import type { ChallengeParams, ChallengePhase } from './Challenge'
 
 const MOVE_DURATION_MS = 150
 const HOLD_DURATION_MS = 1_000
@@ -9,7 +11,11 @@ const HIDDEN_Y = 380
 const VISIBLE_Y = 250
 const GROUND_COLOR = 0xf7f3ea
 
-type ChallengePhase = 'idle' | 'emerging' | 'waiting' | 'returning'
+const CHALLENGE_PARAMS: ChallengeParams[] = [{
+  startAtMs: 0,
+  moveDurationMs: MOVE_DURATION_MS,
+  holdDurationMs: HOLD_DURATION_MS,
+}]
 
 export class ChallengeScene extends Phaser.Scene {
   private readonly startButton: HTMLButtonElement
@@ -31,13 +37,12 @@ export class ChallengeScene extends Phaser.Scene {
     foreground.fillRect(0, 304, 375, 71)
     foreground.fillEllipse(MOLE_X, 310, 178, 20)
 
-    let phase: ChallengePhase = 'idle'
-    let isHit = false
+    const createChallenges = () => CHALLENGE_PARAMS.map(params => new Challenge(params))
+    let challenges = createChallenges()
+    let playStartedAtMs: number | undefined
+    let renderedPhase: ChallengePhase = 'idle'
+    let renderedIsHit = false
     let holdTimer: Phaser.Time.TimerEvent | undefined
-
-    const canHit = () => (
-      !isHit && (phase === 'emerging' || phase === 'waiting')
-    )
 
     const stopCurrentMotion = () => {
       holdTimer?.remove(false)
@@ -45,38 +50,59 @@ export class ChallengeScene extends Phaser.Scene {
       this.tweens.killTweensOf(mole)
     }
 
-    const transitionTo = (nextPhase: ChallengePhase) => {
-      stopCurrentMotion()
-      phase = nextPhase
-      this.startButton.disabled = phase !== 'idle'
+    const renderChallenge = (challenge: Challenge) => {
+      if (renderedPhase === challenge.phase && renderedIsHit === challenge.isHit) return
 
-      switch (phase) {
+      stopCurrentMotion()
+      const hitStarted = !renderedIsHit && challenge.isHit
+      renderedPhase = challenge.phase
+      renderedIsHit = challenge.isHit
+
+      if (hitStarted) {
+        this.drawMole(mole, challenge.isHit)
+        this.tweens.add({
+          targets: mole,
+          scaleX: 1.15,
+          scaleY: 0.75,
+          duration: HIT_SQUASH_DURATION_MS,
+          hold: HIT_HOLD_DURATION_MS,
+          yoyo: true,
+          onComplete: () => {
+            challenge.finishHitReaction()
+            renderChallenge(challenge)
+          },
+        })
+        return
+      }
+
+      switch (challenge.phase) {
         case 'idle':
-          this.startButton.textContent = 'もう一度'
           break
 
         case 'emerging':
-          isHit = false
           mole.setPosition(MOLE_X, HIDDEN_Y).setScale(1)
-          this.drawMole(mole, isHit)
+          this.drawMole(mole, challenge.isHit)
           this.tweens.add({
             targets: mole,
             y: VISIBLE_Y,
-            duration: MOVE_DURATION_MS,
+            duration: challenge.params.moveDurationMs,
             ease: 'Linear',
-            onComplete: () => transitionTo('waiting'),
+            onComplete: () => {
+              challenge.finishEmerging()
+              renderChallenge(challenge)
+            },
           })
           break
 
         case 'waiting':
-          holdTimer = this.time.delayedCall(HOLD_DURATION_MS, () => {
-            transitionTo('returning')
+          holdTimer = this.time.delayedCall(challenge.params.holdDurationMs, () => {
+            challenge.finishWaiting()
+            renderChallenge(challenge)
           })
           break
 
         case 'returning': {
-          // 出現途中で命中した場合も、残りの距離に合わせて帰還時間を決める。
-          const returnDurationMs = MOVE_DURATION_MS
+          const returnDurationMs = challenge.params.moveDurationMs
             * (HIDDEN_Y - mole.y) / (HIDDEN_Y - VISIBLE_Y)
 
           this.tweens.add({
@@ -84,47 +110,69 @@ export class ChallengeScene extends Phaser.Scene {
             y: HIDDEN_Y,
             duration: returnDurationMs,
             ease: 'Linear',
-            onComplete: () => transitionTo('idle'),
+            onComplete: () => {
+              challenge.finishReturning()
+              renderChallenge(challenge)
+            },
           })
           break
         }
+
+        case 'completed':
+          if (challenges.every(item => item.phase === 'completed')) {
+            playStartedAtMs = undefined
+            this.startButton.textContent = 'もう一度'
+            this.startButton.disabled = false
+          }
+          break
       }
     }
 
+    const updateChallenges = () => {
+      if (playStartedAtMs === undefined) return
+
+      const elapsedMs = this.time.now - playStartedAtMs
+      for (const challenge of challenges) {
+        challenge.update(elapsedMs)
+        renderChallenge(challenge)
+      }
+    }
+
+    // 今回は進行表に1件、表示するモグラも1体。
     mole.setInteractive({
       hitArea: new Phaser.Geom.Ellipse(0, 0, 120, 140),
       hitAreaCallback: (area: Phaser.Geom.Ellipse, x: number, y: number) => (
-        canHit() && y + mole.y < 300 && Phaser.Geom.Ellipse.Contains(area, x, y)
+        challenges[0].canHit()
+        && y + mole.y < 300 && Phaser.Geom.Ellipse.Contains(area, x, y)
       ),
       useHandCursor: true,
     })
 
     mole.on('pointerdown', () => {
-      if (!canHit()) return
-
-      isHit = true
-      stopCurrentMotion()
-      this.drawMole(mole, isHit)
-      this.tweens.add({
-        targets: mole,
-        scaleX: 1.15,
-        scaleY: 0.75,
-        duration: HIT_SQUASH_DURATION_MS,
-        hold: HIT_HOLD_DURATION_MS,
-        yoyo: true,
-        onComplete: () => transitionTo('returning'),
-      })
+      const challenge = challenges[0]
+      if (challenge.hit()) renderChallenge(challenge)
     })
 
     const playChallenge = () => {
-      if (phase === 'idle') transitionTo('emerging')
+      if (playStartedAtMs !== undefined) return
+
+      if (challenges.every(challenge => challenge.phase === 'completed')) {
+        challenges = createChallenges()
+      }
+      renderedPhase = 'idle'
+      renderedIsHit = false
+      this.startButton.disabled = true
+      playStartedAtMs = this.time.now
+      updateChallenges()
     }
 
     this.startButton.disabled = false
     this.startButton.addEventListener('click', playChallenge)
+    this.events.on(Phaser.Scenes.Events.UPDATE, updateChallenges)
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       stopCurrentMotion()
       mole.removeAllListeners('pointerdown')
+      this.events.off(Phaser.Scenes.Events.UPDATE, updateChallenges)
       this.startButton.removeEventListener('click', playChallenge)
       this.startButton.disabled = true
     })
