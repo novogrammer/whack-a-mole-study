@@ -88,6 +88,7 @@ test('生成した進行表を実行しても、命中や時間更新の飛び�
     const busy = new Map()
     const callbacks = new Map()
     const context = {
+      addScore() {},
       emergeMole(index, durationMs, onTap) {
         assert.equal(busy.has(index), false, '前のチャレンジが隠れてから出現する')
         busy.set(index, true)
@@ -119,7 +120,7 @@ test('生成した進行表を実行しても、命中や時間更新の飛び�
 
 test('最後のモグラは32秒で打ち切らず、帰還が終わるまで進められる', () => {
   const context = {
-    emergeMole() {}, holdMole() {}, showHitReaction() {}, returnMole() {}, hideMole() {},
+    emergeMole() {}, holdMole() {}, showHitReaction() {}, returnMole() {}, hideMole() {}, addScore() {},
   }
   const schedule = generateChallengeSchedule(options, seededRandom(1))
   const last = new Challenge(context, schedule.at(-1))
@@ -128,4 +129,27 @@ test('最後のモグラは32秒で打ち切らず、帰還が終わるまで進
   assert.equal(last.onTap(32_149), true)
   last.onUpdate(32_599)
   assert.equal(last.phase, 'completed')
+})
+
+
+test('譜面の40件すべてに命中すると40点になり、再タップでは増えない', () => {
+  let score = 0
+  const taps = new Map()
+  const context = {
+    emergeMole(index, durationMs, onTap) { taps.set(index, onTap) },
+    holdMole() {}, showHitReaction() {}, returnMole() {},
+    hideMole(index) { taps.delete(index) },
+    addScore(points) { score += points },
+  }
+  const challenges = generateChallengeSchedule(options, seededRandom(5))
+    .map(params => new Challenge(context, params))
+  for (let timeMs = 0; timeMs <= 32_600; timeMs += 10) {
+    for (const challenge of challenges) challenge.onUpdate(timeMs)
+    for (const onTap of [...taps.values()]) {
+      onTap(timeMs)
+      onTap(timeMs)
+    }
+  }
+  assert.equal(score, 40)
+  assert.ok(challenges.every(challenge => challenge.phase === 'completed'))
 })

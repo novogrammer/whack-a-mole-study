@@ -14,6 +14,12 @@
 body {
   margin: 0;
   background-color: var(--page-background);
+  color: #30251e;
+  font-family: system-ui, sans-serif;
+}
+
+[hidden] {
+  display: none !important;
 }
 
 #app {
@@ -25,6 +31,66 @@ body {
   min-height: 100svh;
   margin-inline: auto;
   background-color: var(--content-background);
+}
+
+.game-header {
+  display: grid;
+  align-items: center;
+  text-align: center;
+
+  @include global.sp-and-pc-block((
+    min-height: 128px,
+    padding: 16px 24px,
+  ));
+}
+
+.screen-panel {
+  h1,
+  h2 {
+    margin: 0;
+
+    @include global.sp-and-pc-block((font-size: 24px));
+  }
+
+  p {
+    @include global.sp-and-pc-block((
+      margin: 8px 0px 0px,
+      font-size: 14px,
+    ));
+  }
+
+  .result-score {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+
+    @include global.sp-and-pc-block((font-size: 36px));
+  }
+}
+
+.game-hud {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  text-align: left;
+
+  dt {
+    @include global.sp-and-pc-block((font-size: 14px));
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+
+    @include global.sp-and-pc-block((font-size: 28px));
+  }
+}
+
+.unit {
+  @include global.sp-and-pc-block((
+    margin-left: 4px,
+    font-size: 14px,
+  ));
 }
 
 #game {

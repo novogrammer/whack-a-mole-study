@@ -6,6 +6,7 @@ export interface ChallengeContext {
   showHitReaction(moleIndex: number, squashDurationMs: number, holdDurationMs: number): void
   returnMole(moleIndex: number, durationMs: number): void
   hideMole(moleIndex: number): void
+  addScore(points: number): void
 }
 
 export interface ChallengeParams {
@@ -91,6 +92,7 @@ export class Challenge {
       : 1
     this.nextTransitionAtMs = elapsedMs
       + this.params.hitSquashDurationMs * 2 + this.params.hitHoldDurationMs
+    this.context.addScore(1)
     this.context.showHitReaction(
       this.params.moleIndex,
       this.params.hitSquashDurationMs,

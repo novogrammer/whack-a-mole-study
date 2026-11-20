@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 import { Challenge } from './Challenge'
 import type { ChallengeContext } from './Challenge'
 import { Mole } from './Mole'
+import type { GameUI } from './GameUI'
 import { generateChallengeSchedule } from './generateChallengeSchedule'
 import { CHALLENGE_RHYTHM, RHYTHM_DURATION_MS, RHYTHM_STEP_DURATION_MS } from './challengeRhythm'
 
@@ -16,14 +17,15 @@ const MOLE_POSITIONS = Array.from({ length: 9 }, (_, index) => ({
 }))
 
 export class ChallengeScene extends Phaser.Scene implements ChallengeContext {
-  private readonly startButton: HTMLButtonElement
+  private readonly ui: GameUI
+  private score = 0
   private moles: Mole[] = []
   private challenges: Challenge[] = []
   private playStartedAtMs: number | undefined
 
-  constructor(startButton: HTMLButtonElement) {
+  constructor(ui: GameUI) {
     super('challenge')
-    this.startButton = startButton
+    this.ui = ui
   }
 
   create() {
@@ -35,19 +37,19 @@ export class ChallengeScene extends Phaser.Scene implements ChallengeContext {
       if (this.playStartedAtMs !== undefined) return
 
       this.challenges = this.createChallenges()
-      this.startButton.disabled = true
+      this.score = 0
+      this.ui.showPlaying(RHYTHM_DURATION_MS)
       this.playStartedAtMs = this.time.now
       this.update()
     }
 
-    this.startButton.disabled = false
-    this.startButton.addEventListener('click', playChallenge)
+    this.ui.showReady()
+    const unsubscribeStart = this.ui.onStart(playChallenge)
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       for (const mole of this.moles) mole.destroy()
       this.moles = []
       this.playStartedAtMs = undefined
-      this.startButton.removeEventListener('click', playChallenge)
-      this.startButton.disabled = true
+      unsubscribeStart()
     })
   }
 
@@ -56,12 +58,12 @@ export class ChallengeScene extends Phaser.Scene implements ChallengeContext {
 
     const elapsedMs = this.time.now - this.playStartedAtMs
     for (const challenge of this.challenges) challenge.onUpdate(elapsedMs)
+    this.ui.updateRemainingTime(RHYTHM_DURATION_MS - elapsedMs)
 
     if (elapsedMs >= RHYTHM_DURATION_MS
       && this.challenges.every(challenge => challenge.phase === 'completed')) {
       this.playStartedAtMs = undefined
-      this.startButton.textContent = 'もう一度'
-      this.startButton.disabled = false
+      this.ui.showResult(this.score)
     }
   }
 
@@ -86,6 +88,12 @@ export class ChallengeScene extends Phaser.Scene implements ChallengeContext {
 
   hideMole(moleIndex: number) {
     this.moles[moleIndex].hide()
+  }
+
+  addScore(points: number) {
+    if (this.playStartedAtMs === undefined) return
+    this.score += points
+    this.ui.updateScore(this.score)
   }
 
   private createChallenges() {

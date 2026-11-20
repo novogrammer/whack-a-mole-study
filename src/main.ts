@@ -1,8 +1,9 @@
 import Phaser from 'phaser'
 import { ChallengeScene } from './ChallengeScene'
+import { GameUI } from './GameUI'
 import './style.scss'
 
-const startButton = document.querySelector<HTMLButtonElement>('#start-challenge')!
+const ui = new GameUI(document.querySelector<HTMLElement>('#app')!)
 
 new Phaser.Game({
   type: Phaser.AUTO,
@@ -14,5 +15,5 @@ new Phaser.Game({
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: new ChallengeScene(startButton),
+  scene: new ChallengeScene(ui),
 })
