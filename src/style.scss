@@ -1,5 +1,28 @@
 @use "./global";
 
-body{
+:root {
+  --page-background: #e5e7eb;
+  --content-background: #fff;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
   margin: 0;
+  background-color: var(--page-background);
+}
+
+#app {
+  @include global.sp-and-pc-block((
+    width: 375px,
+  ));
+
+  min-height: 100vh;
+  min-height: 100svh;
+  margin-inline: auto;
+  background-color: var(--content-background);
 }
