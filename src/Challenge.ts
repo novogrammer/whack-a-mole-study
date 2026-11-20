@@ -1,15 +1,16 @@
 export type ChallengePhase = 'idle' | 'emerging' | 'waiting' | 'returning' | 'completed'
 
 export interface ChallengeContext {
-  emergeMole(durationMs: number): void
-  holdMole(): void
-  showHitReaction(squashDurationMs: number, holdDurationMs: number): void
-  returnMole(durationMs: number): void
-  hideMole(): void
+  emergeMole(moleIndex: number, durationMs: number, onTap: (elapsedMs: number) => void): void
+  holdMole(moleIndex: number): void
+  showHitReaction(moleIndex: number, squashDurationMs: number, holdDurationMs: number): void
+  returnMole(moleIndex: number, durationMs: number): void
+  hideMole(moleIndex: number): void
 }
 
 export interface ChallengeParams {
   startAtMs: number
+  moleIndex: number
   moveDurationMs: number
   holdDurationMs: number
   hitSquashDurationMs: number
@@ -51,13 +52,15 @@ export class Challenge {
         case 'idle':
           this.currentPhase = 'emerging'
           this.nextTransitionAtMs += this.params.moveDurationMs
-          this.context.emergeMole(this.params.moveDurationMs)
+          this.context.emergeMole(this.params.moleIndex, this.params.moveDurationMs, elapsedMs => {
+            this.onTap(elapsedMs)
+          })
           break
 
         case 'emerging':
           this.currentPhase = 'waiting'
           this.nextTransitionAtMs += this.params.holdDurationMs
-          this.context.holdMole()
+          this.context.holdMole(this.params.moleIndex)
           break
 
         case 'waiting':
@@ -66,13 +69,13 @@ export class Challenge {
 
         case 'returning':
           this.currentPhase = 'completed'
-          this.context.hideMole()
+          this.context.hideMole(this.params.moleIndex)
           break
       }
     }
   }
 
-  canHit(): boolean {
+  private canHit(): boolean {
     return !this.hitRegistered
       && (this.currentPhase === 'emerging' || this.currentPhase === 'waiting')
   }
@@ -89,6 +92,7 @@ export class Challenge {
     this.nextTransitionAtMs = elapsedMs
       + this.params.hitSquashDurationMs * 2 + this.params.hitHoldDurationMs
     this.context.showHitReaction(
+      this.params.moleIndex,
       this.params.hitSquashDurationMs,
       this.params.hitHoldDurationMs,
     )
@@ -99,6 +103,6 @@ export class Challenge {
     const durationMs = this.params.moveDurationMs * this.returnProgress
     this.currentPhase = 'returning'
     this.nextTransitionAtMs += durationMs
-    this.context.returnMole(durationMs)
+    this.context.returnMole(this.params.moleIndex, durationMs)
   }
 }

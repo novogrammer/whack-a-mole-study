@@ -120,11 +120,15 @@ Phaserのゲーム座標も幅375を基準にする案とし、盤面全体を�
 
 `Challenge`クラスが進行段階の`phase`と、命中済みかを表す`isHit`を管理する。`phase`は`idle`（開始前）、`emerging`（出現中）、`waiting`（停止中）、`returning`（帰還中）、`completed`（完了）とする。完了後も命中結果を保持し、再実行時は同じ設定から配列を作り直す。
 
-Sceneは`ChallengeContext`を実装し、各`Challenge`に`onUpdate(elapsedMs)`で時間、`onTap(elapsedMs)`でタップを渡す。`Challenge`自身が時間と入力から進行を決め、Contextの`emergeMole()`・`holdMole()`・`showHitReaction()`・`returnMole()`・`hideMole()`を呼んで演出を依頼する。Sceneは描画とTweenを担当する。
+Sceneは`ChallengeContext`を実装し、各`Challenge`に`onUpdate(elapsedMs)`で時間、`onTap(elapsedMs)`でタップを渡す。`Challenge`自身が時間と入力から進行を決め、Contextの`emergeMole()`・`holdMole()`・`showHitReaction()`・`returnMole()`・`hideMole()`を呼んで演出を依頼する。SceneはMoleへの操作の振り分けを担当する。
+
+`Mole`は1マス分の描画・Tween・当たり判定を担当し、Sceneは`moles`配列として持つ。現在は要素1個とする。`ChallengeParams`の`moleIndex`で対象を指定し、Contextの各操作へ渡す。Sceneは`moles[moleIndex]`に操作を委譲する。
+
+`emergeMole(moleIndex, durationMs, onTap)`には、その`Challenge`のタップ用コールバックを渡す。Moleは出現時にリスナーを登録し、位置の当たり判定を通ったタップを通知する。Sceneは経過時間を付けてコールバックへ渡し、命中の受付可否は`Challenge`内部で判断する。リスナーはMole内部で命中リアクション・帰還・非表示・破棄時に解除し、次の出現では新たに登録する。
 
 `canHit()`は「出現中または停止中、かつ未命中」を判定する。命中時は`isHit`を更新し、その時点の`phase`のまま通常の進行と移動を止めてリアクションを返し、終わったら帰還へ進む。
 
-出現・停止・命中リアクション・帰還の時間は`Challenge`側で管理し、SceneのTween完了通知で状態を操作しない。Sceneは演出の依頼を受ける際に直前のTweenを解除し、出現と帰還は独立したTween、命中時のつぶれて元に戻る動きはTweenの`yoyo`で表現する。
+出現・停止・命中リアクション・帰還の時間は`Challenge`側で管理し、SceneのTween完了通知で状態を操作しない。Moleは演出の依頼を受ける際に直前のTweenを解除し、出現と帰還は独立したTween、命中時のつぶれて元に戻る動きはTweenの`yoyo`で表現する。
 
 ## 7. これから相談すること
 
