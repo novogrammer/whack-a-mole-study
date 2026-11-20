@@ -1,0 +1,14 @@
+const BPM = 120
+
+export const RHYTHM_STEP_DURATION_MS = 60_000 / BPM / 2
+
+// 1枠は八分音符。各行は4小節（8秒）、1は出現開始、0は休符。
+export const CHALLENGE_RHYTHM = [
+  '1000 0000 1000 0000 1000 0000 1000 0000',
+  '1000 0010 1000 0010 1000 0010 1000 0010',
+  '1000 1010 1000 1010 1000 1010 1000 1010',
+  '1010 1000 1111 1000 1010 1000 1111 1000',
+] as const
+
+export const RHYTHM_DURATION_MS = CHALLENGE_RHYTHM.join('').replace(/\s/g, '').length
+  * RHYTHM_STEP_DURATION_MS

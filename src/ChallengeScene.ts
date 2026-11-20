@@ -3,14 +3,13 @@ import { Challenge } from './Challenge'
 import type { ChallengeContext } from './Challenge'
 import { Mole } from './Mole'
 import { generateChallengeSchedule } from './generateChallengeSchedule'
+import { CHALLENGE_RHYTHM, RHYTHM_DURATION_MS, RHYTHM_STEP_DURATION_MS } from './challengeRhythm'
 
 const MOVE_DURATION_MS = 150
 const HOLD_DURATION_MS = 1_000
 const HIT_SQUASH_DURATION_MS = 90
 const HIT_HOLD_DURATION_MS = 120
 
-const PLAY_DURATION_MS = 30_000
-const CHALLENGE_COUNT = 30
 const MOLE_POSITIONS = Array.from({ length: 9 }, (_, index) => ({
   x: 62.5 + (index % 3) * 125,
   y: 145 + Math.floor(index / 3) * 75,
@@ -58,7 +57,8 @@ export class ChallengeScene extends Phaser.Scene implements ChallengeContext {
     const elapsedMs = this.time.now - this.playStartedAtMs
     for (const challenge of this.challenges) challenge.onUpdate(elapsedMs)
 
-    if (elapsedMs >= PLAY_DURATION_MS) {
+    if (elapsedMs >= RHYTHM_DURATION_MS
+      && this.challenges.every(challenge => challenge.phase === 'completed')) {
       this.playStartedAtMs = undefined
       this.startButton.textContent = 'もう一度'
       this.startButton.disabled = false
@@ -90,9 +90,9 @@ export class ChallengeScene extends Phaser.Scene implements ChallengeContext {
 
   private createChallenges() {
     const challengeParams = generateChallengeSchedule({
-      playDurationMs: PLAY_DURATION_MS,
+      rhythm: CHALLENGE_RHYTHM,
+      stepDurationMs: RHYTHM_STEP_DURATION_MS,
       moleCount: this.moles.length,
-      challengeCount: CHALLENGE_COUNT,
       timing: {
         moveDurationMs: MOVE_DURATION_MS,
         holdDurationMs: HOLD_DURATION_MS,
