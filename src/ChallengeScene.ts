@@ -29,6 +29,8 @@ export class ChallengeScene extends Phaser.Scene implements ChallengeContext {
   }
 
   create() {
+    // 描画は750px、ゲーム内の座標は375px基準を保つ。
+    this.cameras.main.setOrigin(0, 0).setZoom(this.scale.width / 375)
     this.moles = MOLE_POSITIONS.map(({ x, y }) => new Mole(this, x, y))
     this.challenges = []
     this.playStartedAtMs = undefined

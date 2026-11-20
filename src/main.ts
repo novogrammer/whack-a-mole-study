@@ -8,8 +8,8 @@ const ui = new GameUI(document.querySelector<HTMLElement>('#app')!)
 new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'game',
-  width: 375,
-  height: 375,
+  width: 750,
+  height: 750,
   backgroundColor: '#f7f3ea',
   scale: {
     mode: Phaser.Scale.FIT,
