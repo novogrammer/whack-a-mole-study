@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 
-const HIDDEN_OFFSET_Y = 80
+const HIDDEN_OFFSET_Y = 90
 const VISIBLE_OFFSET_Y = -50
 const DISPLAY_SCALE = 0.75
 const GROUND_COLOR = 0xf7f3ea
@@ -18,19 +18,34 @@ export class Mole {
     this.graphics = scene.add.graphics({ x: 0, y: HIDDEN_OFFSET_Y })
     this.drawMole(this.graphics)
 
-    // 手前の地面で、穴より下のモグラを隠す。
+    // 穴と同じ幅の地面を重ね、隣の穴へはみ出さず下半分の輪郭を保つ。
     const foreground = scene.add.graphics()
     foreground.fillStyle(GROUND_COLOR)
-    foreground.fillRect(-100, 4, 200, 160)
-    foreground.fillEllipse(0, 10, 178, 20)
+    foreground.beginPath()
+    const frontEdge = hole.geom.getPoints(hole.smoothness)
+      .slice(0, hole.smoothness / 2 + 1)
+      .reverse()
+    foreground.moveTo(-hole.width / 2, 0)
+    for (const point of frontEdge) {
+      foreground.lineTo(point.x - hole.displayOriginX, point.y - hole.displayOriginY)
+    }
+    foreground.lineTo(hole.width / 2, 180)
+    foreground.lineTo(-hole.width / 2, 180)
+    foreground.closePath()
+    foreground.fillPath()
     this.container.add([hole, this.graphics, foreground])
 
     this.graphics.setInteractive({
       hitArea: new Phaser.Geom.Ellipse(0, 0, 120, 140),
-      hitAreaCallback: (area: Phaser.Geom.Ellipse, localX: number, localY: number) => (
-        localY + this.graphics.y < 0
-        && Phaser.Geom.Ellipse.Contains(area, localX, localY)
-      ),
+      hitAreaCallback: (area: Phaser.Geom.Ellipse, localX: number, localY: number) => {
+        const y = localY + this.graphics.y
+        const isAboveGround = y < 0
+        const isInsideHole = Phaser.Geom.Ellipse.Contains(
+          hole.geom, localX + hole.displayOriginX, y + hole.displayOriginY,
+        )
+        return (isAboveGround || isInsideHole)
+          && Phaser.Geom.Ellipse.Contains(area, localX, localY)
+      },
       useHandCursor: true,
     })
     this.graphics.disableInteractive()
