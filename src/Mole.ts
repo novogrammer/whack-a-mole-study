@@ -32,8 +32,8 @@ export class Mole {
     for (const point of frontEdge) {
       foreground.lineTo(point.x - hole.displayOriginX, point.y - hole.displayOriginY)
     }
-    foreground.lineTo(hole.width / 2, 180)
-    foreground.lineTo(-hole.width / 2, 180)
+    foreground.lineTo(hole.width / 2, 260)
+    foreground.lineTo(-hole.width / 2, 260)
     foreground.closePath()
     foreground.fillPath()
     this.container.add([hole, this.graphics, foreground])
@@ -136,6 +136,8 @@ export class Mole {
   private drawMole(mole: Phaser.GameObjects.Graphics, isHit = false) {
     mole.clear()
     mole.fillStyle(0xa97852)
+    // 顔はそのままに、下へ続く胴体を先に描く。
+    mole.fillEllipse(0, 65, 96, 150)
     mole.fillCircle(-38, -28, 16)
     mole.fillCircle(38, -28, 16)
     mole.fillEllipse(0, 0, 108, 128)
