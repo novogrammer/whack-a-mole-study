@@ -2,6 +2,9 @@ import Phaser from 'phaser'
 import { Challenge } from './Challenge'
 import type { ChallengeContext } from './Challenge'
 import { Mole } from './Mole'
+import bgmUrl from './assets/audio/bgm.mp3?no-inline'
+import { getIntroMessage, getPlayStage, INTRO_DURATION_MS } from './playTimeline'
+import type { PlayStage } from './playTimeline'
 import { HIT_EFFECT_ASSETS } from './HitEffect'
 import type { GameUI } from './GameUI'
 import { generateChallengeSchedule } from './generateChallengeSchedule'
@@ -19,6 +22,8 @@ const MOLE_POSITIONS = Array.from({ length: 9 }, (_, index) => ({
 
 export class ChallengeScene extends Phaser.Scene implements ChallengeContext {
   private readonly ui: GameUI
+  private bgm!: Phaser.Sound.WebAudioSound | Phaser.Sound.HTML5AudioSound
+  private stage: PlayStage | undefined
   private score = 0
   private moles: Mole[] = []
   private challenges: Challenge[] = []
@@ -30,6 +35,7 @@ export class ChallengeScene extends Phaser.Scene implements ChallengeContext {
   }
 
   preload() {
+    this.load.audio('bgm', bgmUrl)
     for (const asset of HIT_EFFECT_ASSETS) this.load.svg(asset.key, asset.url)
   }
 
@@ -39,15 +45,24 @@ export class ChallengeScene extends Phaser.Scene implements ChallengeContext {
     this.moles = MOLE_POSITIONS.map(({ x, y }) => new Mole(this, x, y))
     this.challenges = []
     this.playStartedAtMs = undefined
+    this.stage = undefined
+    this.bgm = this.sound.add('bgm', { loop: false }) as typeof this.bgm
+    this.bgm.on(Phaser.Sound.Events.PLAY, () => {
+      this.playStartedAtMs = this.time.now
+      this.update()
+    })
+    const playMusic = () => this.bgm.play({ seek: 0 })
 
     const playChallenge = () => {
-      if (this.playStartedAtMs !== undefined) return
+      if (this.playStartedAtMs !== undefined || this.stage === 'intro') return
 
       this.challenges = this.createChallenges()
       this.score = 0
-      this.ui.showPlaying(RHYTHM_DURATION_MS)
-      this.playStartedAtMs = this.time.now
-      this.update()
+      this.stage = 'intro'
+      this.ui.showIntro()
+      this.bgm.stop()
+      if (this.sound.locked) this.sound.once(Phaser.Sound.Events.UNLOCKED, playMusic)
+      else playMusic()
     }
 
     this.ui.showReady()
@@ -56,28 +71,49 @@ export class ChallengeScene extends Phaser.Scene implements ChallengeContext {
       for (const mole of this.moles) mole.destroy()
       this.moles = []
       this.playStartedAtMs = undefined
+      this.sound.off(Phaser.Sound.Events.UNLOCKED, playMusic)
+      this.bgm.destroy()
       unsubscribeStart()
     })
   }
 
   update() {
-    if (this.playStartedAtMs === undefined) return
+    const elapsedMs = this.getElapsedMs()
+    if (elapsedMs === undefined) return
 
-    const elapsedMs = this.time.now - this.playStartedAtMs
-    for (const challenge of this.challenges) challenge.onUpdate(elapsedMs)
-    this.ui.updateRemainingTime(RHYTHM_DURATION_MS - elapsedMs)
+    const stage = getPlayStage(elapsedMs, RHYTHM_DURATION_MS)
+    if (stage === 'intro') {
+      this.ui.updateIntro(getIntroMessage(elapsedMs))
+      return
+    }
 
-    if (elapsedMs >= RHYTHM_DURATION_MS
-      && this.challenges.every(challenge => challenge.phase === 'completed')) {
+    if (stage === 'playing' && this.stage !== 'playing') {
+      this.ui.showPlaying(RHYTHM_DURATION_MS)
+    }
+    const gameElapsedMs = elapsedMs - INTRO_DURATION_MS
+    for (const challenge of this.challenges) challenge.onUpdate(gameElapsedMs)
+    this.ui.updateRemainingTime(RHYTHM_DURATION_MS - gameElapsedMs)
+
+    if (stage === 'ending' && this.stage !== 'ending') this.ui.showEnding()
+    this.stage = stage
+    if (stage === 'result') {
       this.playStartedAtMs = undefined
       this.ui.showResult(this.score)
     }
   }
 
+  private getElapsedMs(): number | undefined {
+    if (this.playStartedAtMs === undefined) return undefined
+    if (this.bgm.isPlaying || this.bgm.isPaused) return this.bgm.seek * 1_000
+    // 音源の長さには依存せず、結果画面へ進める。
+    return this.time.now - this.playStartedAtMs
+  }
+
   emergeMole(moleIndex: number, durationMs: number, onTap: (elapsedMs: number) => void) {
     this.moles[moleIndex].emerge(durationMs, () => {
-      if (this.playStartedAtMs === undefined) return
-      onTap(this.time.now - this.playStartedAtMs)
+      const elapsedMs = this.getElapsedMs()
+      if (elapsedMs === undefined || elapsedMs < INTRO_DURATION_MS) return
+      onTap(elapsedMs - INTRO_DURATION_MS)
     })
   }
 

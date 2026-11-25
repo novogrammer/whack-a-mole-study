@@ -76,3 +76,33 @@ test('開始操作のリスナーを解除できる', () => {
   get('#start-challenge').dispatchEvent(new Event('click'))
   assert.equal(starts, 1)
 })
+
+test('イントロと終了表示では開始操作を受け付けず、結果への切り替えで案内を消す', () => {
+  const { ui, get } = setup()
+  let starts = 0
+  ui.onStart(() => starts++)
+  ui.showIntro()
+  ui.updateIntro('3')
+  assert.equal(get('#play-notice').textContent, '3')
+  assert.equal(get('#hud').hidden, true)
+  assert.equal(get('#ready').hidden, true)
+  assert.equal(get('.challenge-controls').hidden, true)
+  get('#start-challenge').dispatchEvent(new Event('click'))
+  assert.equal(starts, 0)
+
+  ui.showPlaying(32_000)
+  assert.equal(get('#play-notice').hidden, true)
+  ui.showEnding()
+  assert.equal(get('#play-notice').textContent, '終了')
+  assert.equal(get('#play-notice').hidden, false)
+  assert.equal(get('#hud').hidden, true)
+  get('#start-challenge').dispatchEvent(new Event('click'))
+  assert.equal(starts, 0)
+
+  ui.showResult(20)
+  assert.equal(get('#play-notice').hidden, true)
+  assert.equal(get('#result').hidden, false)
+  ui.showReady()
+  assert.equal(get('#play-notice').hidden, true)
+  assert.equal(get('#ready').hidden, false)
+})

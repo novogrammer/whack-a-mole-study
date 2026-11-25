@@ -1,5 +1,6 @@
 export class GameUI {
-  private screen: 'ready' | 'playing' | 'result' = 'ready'
+  private screen: 'ready' | 'intro' | 'playing' | 'ending' | 'result' = 'ready'
+  private readonly notice: HTMLElement
   private readonly ready: HTMLElement
   private readonly hud: HTMLElement
   private readonly result: HTMLElement
@@ -10,6 +11,7 @@ export class GameUI {
   private readonly finalScore: HTMLElement
 
   constructor(root: HTMLElement) {
+    this.notice = root.querySelector<HTMLElement>('#play-notice')!
     this.ready = root.querySelector<HTMLElement>('#ready')!
     this.hud = root.querySelector<HTMLElement>('#hud')!
     this.result = root.querySelector<HTMLElement>('#result')!
@@ -40,6 +42,7 @@ export class GameUI {
     this.ready.hidden = false
     this.hud.hidden = true
     this.result.hidden = true
+    this.notice.hidden = true
     this.controls.hidden = false
     this.startButton.textContent = 'スタート'
     this.startButton.disabled = false
@@ -50,10 +53,33 @@ export class GameUI {
     this.ready.hidden = true
     this.hud.hidden = false
     this.result.hidden = true
+    this.notice.hidden = true
     this.controls.hidden = true
     this.startButton.disabled = true
     this.updateScore(0)
     this.updateRemainingTime(durationMs)
+  }
+
+  showIntro() {
+    this.screen = 'intro'
+    this.ready.hidden = true
+    this.hud.hidden = true
+    this.result.hidden = true
+    this.controls.hidden = true
+    this.startButton.disabled = true
+    this.notice.textContent = '準備'
+    this.notice.hidden = false
+  }
+
+  updateIntro(message: string) {
+    if (this.notice.textContent !== message) this.notice.textContent = message
+  }
+
+  showEnding() {
+    this.screen = 'ending'
+    this.hud.hidden = true
+    this.notice.textContent = '終了'
+    this.notice.hidden = false
   }
 
   updateScore(score: number) {
@@ -69,6 +95,7 @@ export class GameUI {
     this.screen = 'result'
     this.ready.hidden = true
     this.hud.hidden = true
+    this.notice.hidden = true
     this.result.hidden = false
     this.finalScore.textContent = String(score)
     this.controls.hidden = false

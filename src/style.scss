@@ -86,6 +86,13 @@ body {
   }
 }
 
+.play-notice {
+  margin: 0;
+  font-weight: 700;
+
+  @include global.sp-and-pc-block((font-size: 32px));
+}
+
 .unit {
   @include global.sp-and-pc-block((
     margin-left: 4px,
