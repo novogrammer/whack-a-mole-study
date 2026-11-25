@@ -3,6 +3,8 @@ import { Challenge } from './Challenge'
 import type { ChallengeContext } from './Challenge'
 import { Mole } from './Mole'
 import bgmUrl from './assets/audio/bgm.mp3?no-inline'
+import emergeSoundUrl from './assets/audio/mole-emerge.mp3?no-inline'
+import hitSoundUrl from './assets/audio/mole-hit.mp3?no-inline'
 import { getIntroMessage, getPlayStage, INTRO_DURATION_MS } from './playTimeline'
 import type { PlayStage } from './playTimeline'
 import { HIT_EFFECT_ASSETS } from './HitEffect'
@@ -36,6 +38,8 @@ export class ChallengeScene extends Phaser.Scene implements ChallengeContext {
 
   preload() {
     this.load.audio('bgm', bgmUrl)
+    this.load.audio('mole-emerge', emergeSoundUrl)
+    this.load.audio('mole-hit', hitSoundUrl)
     for (const asset of HIT_EFFECT_ASSETS) this.load.svg(asset.key, asset.url)
   }
 
@@ -73,6 +77,8 @@ export class ChallengeScene extends Phaser.Scene implements ChallengeContext {
       this.playStartedAtMs = undefined
       this.sound.off(Phaser.Sound.Events.UNLOCKED, playMusic)
       this.bgm.destroy()
+      this.sound.stopByKey('mole-emerge')
+      this.sound.stopByKey('mole-hit')
       unsubscribeStart()
     })
   }
@@ -110,6 +116,7 @@ export class ChallengeScene extends Phaser.Scene implements ChallengeContext {
   }
 
   emergeMole(moleIndex: number, durationMs: number, onTap: (elapsedMs: number) => void) {
+    this.sound.play('mole-emerge')
     this.moles[moleIndex].emerge(durationMs, () => {
       const elapsedMs = this.getElapsedMs()
       if (elapsedMs === undefined || elapsedMs < INTRO_DURATION_MS) return
@@ -122,6 +129,7 @@ export class ChallengeScene extends Phaser.Scene implements ChallengeContext {
   }
 
   showHitReaction(moleIndex: number, squashDurationMs: number, holdDurationMs: number) {
+    this.sound.play('mole-hit')
     this.moles[moleIndex].showHitReaction(squashDurationMs, holdDurationMs)
   }
 
