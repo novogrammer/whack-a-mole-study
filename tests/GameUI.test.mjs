@@ -16,15 +16,21 @@ function setup() {
   return { ui: new GameUI(root), get: selector => elements.get(selector) }
 }
 
-test('待機・プレイ・結果と再プレイを切り替え、スコアと時間をリセットする', () => {
+test('結果からはタイトルへ戻り、次のスタート操作で再プレイする', () => {
   const { ui, get } = setup()
+  let starts = 0
+  ui.onStart(() => {
+    starts++
+    ui.showPlaying(32_000)
+  })
   ui.showReady()
   assert.equal(get('#ready').hidden, false)
   assert.equal(get('#hud').hidden, true)
   assert.equal(get('#result').hidden, true)
   assert.equal(get('#start-challenge').disabled, false)
 
-  ui.showPlaying(32_000)
+  get('#start-challenge').dispatchEvent(new Event('click'))
+  assert.equal(starts, 1)
   assert.equal(get('#ready').hidden, true)
   assert.equal(get('#hud').hidden, false)
   assert.equal(get('.challenge-controls').hidden, true)
@@ -36,9 +42,17 @@ test('待機・プレイ・結果と再プレイを切り替え、スコアと�
   assert.equal(get('#result').hidden, false)
   assert.equal(get('#final-score').textContent, '17')
   assert.equal(get('.challenge-controls').hidden, false)
-  assert.equal(get('#start-challenge').textContent, 'もう一度')
+  assert.equal(get('#start-challenge').textContent, 'タイトルへ戻る')
 
-  ui.showPlaying(32_000)
+  get('#start-challenge').dispatchEvent(new Event('click'))
+  assert.equal(starts, 1, 'タイトルへ戻る操作ではプレイを開始しない')
+  assert.equal(get('#ready').hidden, false)
+  assert.equal(get('#hud').hidden, true)
+  assert.equal(get('#result').hidden, true)
+  assert.equal(get('#start-challenge').textContent, 'スタート')
+
+  get('#start-challenge').dispatchEvent(new Event('click'))
+  assert.equal(starts, 2)
   assert.equal(get('#score').textContent, '0')
   assert.equal(get('#remaining-time').textContent, '32')
   assert.equal(get('#result').hidden, true)

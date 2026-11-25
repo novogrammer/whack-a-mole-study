@@ -1,4 +1,5 @@
 export class GameUI {
+  private screen: 'ready' | 'playing' | 'result' = 'ready'
   private readonly ready: HTMLElement
   private readonly hud: HTMLElement
   private readonly result: HTMLElement
@@ -20,11 +21,22 @@ export class GameUI {
   }
 
   onStart(handler: () => void): () => void {
-    this.startButton.addEventListener('click', handler)
-    return () => this.startButton.removeEventListener('click', handler)
+    const handleClick = () => {
+      if (this.startButton.disabled) return
+
+      if (this.screen === 'result') {
+        this.showReady()
+        this.startButton.focus({ preventScroll: true })
+      } else if (this.screen === 'ready') {
+        handler()
+      }
+    }
+    this.startButton.addEventListener('click', handleClick)
+    return () => this.startButton.removeEventListener('click', handleClick)
   }
 
   showReady() {
+    this.screen = 'ready'
     this.ready.hidden = false
     this.hud.hidden = true
     this.result.hidden = true
@@ -34,6 +46,7 @@ export class GameUI {
   }
 
   showPlaying(durationMs: number) {
+    this.screen = 'playing'
     this.ready.hidden = true
     this.hud.hidden = false
     this.result.hidden = true
@@ -53,12 +66,13 @@ export class GameUI {
   }
 
   showResult(score: number) {
+    this.screen = 'result'
     this.ready.hidden = true
     this.hud.hidden = true
     this.result.hidden = false
     this.finalScore.textContent = String(score)
     this.controls.hidden = false
-    this.startButton.textContent = 'もう一度'
+    this.startButton.textContent = 'タイトルへ戻る'
     this.startButton.disabled = false
     this.result.focus({ preventScroll: true })
   }
