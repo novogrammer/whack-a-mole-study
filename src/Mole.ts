@@ -1,4 +1,5 @@
 import Phaser from 'phaser'
+import { HitEffect } from './HitEffect'
 
 const HIDDEN_OFFSET_Y = 90
 const VISIBLE_OFFSET_Y = -50
@@ -9,7 +10,9 @@ export class Mole {
   private readonly scene: Phaser.Scene
   private readonly container: Phaser.GameObjects.Container
   private readonly graphics: Phaser.GameObjects.Graphics
-  private tapHandler: (() => void) | undefined
+  private readonly hitEffect: HitEffect
+  private lastTapPosition: Phaser.Math.Vector2 | undefined
+  private tapHandler: ((pointer: Phaser.Input.Pointer) => void) | undefined
 
   constructor(scene: Phaser.Scene, x: number, holeY: number) {
     this.scene = scene
@@ -49,14 +52,20 @@ export class Mole {
       useHandCursor: true,
     })
     this.graphics.disableInteractive()
+    this.hitEffect = new HitEffect(scene)
   }
 
   emerge(durationMs: number, onTap: () => void) {
     this.unregisterTap()
+    this.hitEffect.stop()
+    this.lastTapPosition = undefined
     this.scene.tweens.killTweensOf(this.graphics)
     this.graphics.setPosition(0, HIDDEN_OFFSET_Y).setScale(1)
     this.drawMole(this.graphics)
-    this.tapHandler = onTap
+    this.tapHandler = pointer => {
+      this.lastTapPosition = this.scene.cameras.main.getWorldPoint(pointer.x, pointer.y)
+      onTap()
+    }
     this.graphics.on('pointerdown', this.tapHandler)
     this.graphics.setInteractive()
     this.scene.tweens.add({
@@ -74,6 +83,9 @@ export class Mole {
 
   showHitReaction(squashDurationMs: number, holdDurationMs: number) {
     this.unregisterTap()
+    if (this.lastTapPosition) {
+      this.hitEffect.play(this.lastTapPosition.x, this.lastTapPosition.y)
+    }
     this.scene.tweens.killTweensOf(this.graphics)
     this.drawMole(this.graphics, true)
     this.scene.tweens.add({
@@ -100,12 +112,14 @@ export class Mole {
 
   hide() {
     this.unregisterTap()
+    this.hitEffect.stop()
     this.scene.tweens.killTweensOf(this.graphics)
     this.graphics.setY(HIDDEN_OFFSET_Y)
   }
 
   destroy() {
     this.unregisterTap()
+    this.hitEffect.destroy()
     this.scene.tweens.killTweensOf(this.graphics)
     this.container.destroy()
   }

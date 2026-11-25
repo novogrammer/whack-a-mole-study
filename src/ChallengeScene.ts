@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 import { Challenge } from './Challenge'
 import type { ChallengeContext } from './Challenge'
 import { Mole } from './Mole'
+import { HIT_EFFECT_ASSETS } from './HitEffect'
 import type { GameUI } from './GameUI'
 import { generateChallengeSchedule } from './generateChallengeSchedule'
 import { CHALLENGE_RHYTHM, RHYTHM_DURATION_MS, RHYTHM_STEP_DURATION_MS } from './challengeRhythm'
@@ -26,6 +27,10 @@ export class ChallengeScene extends Phaser.Scene implements ChallengeContext {
   constructor(ui: GameUI) {
     super('challenge')
     this.ui = ui
+  }
+
+  preload() {
+    for (const asset of HIT_EFFECT_ASSETS) this.load.svg(asset.key, asset.url)
   }
 
   create() {
