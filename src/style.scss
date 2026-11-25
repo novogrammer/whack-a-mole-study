@@ -118,6 +118,19 @@ body {
   ));
 }
 
+.site-footer {
+  text-align: center;
+
+  @include global.sp-and-pc-block((
+    padding: 16px 24px,
+    font-size: 14px,
+  ));
+
+  a {
+    color: inherit;
+  }
+}
+
 #start-challenge {
   @include global.sp-and-pc-block((
     min-width: 180px,
