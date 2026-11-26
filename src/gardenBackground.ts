@@ -17,7 +17,7 @@ export function drawGardenBackground(scene: Phaser.Scene) {
   background.fillStyle(GARDEN_COLORS.sky)
   background.fillRect(0, 0, 375, 600)
 
-  // 空と緑の境界は、後から植物を配置するための仮の水平線。
+  // この境界の上に、別パーツの茂みと植物を重ねる。
   background.fillStyle(GARDEN_COLORS.greenery)
   background.fillRect(0, 72, 375, 528)
 

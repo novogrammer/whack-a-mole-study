@@ -3,6 +3,7 @@ import { Challenge } from './Challenge'
 import type { ChallengeContext } from './Challenge'
 import { Mole } from './Mole'
 import { drawGardenBackground } from './gardenBackground'
+import { drawGardenExtras, drawGardenPlants, drawGardenStones } from './gardenDecorations'
 import bgmUrl from './assets/audio/bgm.mp3?no-inline'
 import emergeSoundUrl from './assets/audio/mole-emerge.mp3?no-inline'
 import hitSoundUrl from './assets/audio/mole-hit.mp3?no-inline'
@@ -48,7 +49,10 @@ export class ChallengeScene extends Phaser.Scene implements ChallengeContext {
     // 描画は750×1200px、ゲーム内の座標は375×600px基準を保つ。
     this.cameras.main.setOrigin(0, 0).setZoom(this.scale.width / 375)
     drawGardenBackground(this)
+    drawGardenPlants(this)
     this.moles = MOLE_POSITIONS.map(({ x, y }) => new Mole(this, x, y))
+    drawGardenStones(this, MOLE_POSITIONS)
+    drawGardenExtras(this)
     this.challenges = []
     this.playStartedAtMs = undefined
     this.stage = undefined
