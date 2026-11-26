@@ -2,8 +2,8 @@
 // 同じ色値でも、別々に調整したい用途は別の定数にしている。
 export const COLORS = {
   garden: {
-    sky: 0xb9dce8,
-    greenery: 0x9fb487,
+    sky: 0x80ccff,
+    greenery: 0x9fe087,
     soil: 0xc49a68,
     path: 0xdec59a,
     cloud: 0xfffbef,
@@ -14,13 +14,13 @@ export const COLORS = {
     footprint: 0xa88a60,
   },
   plants: {
-    vein: 0x536e43,
-    hedge: 0x86a16e,
-    leafDark: 0x66864e,
-    leaf: 0x719354,
-    leafLight: 0x829f5b,
-    leafPale: 0x91aa66,
-    leafHighlight: 0x9ab36b,
+    vein: 0x34853d,
+    hedge: 0x60c060,
+    leafDark: 0x429b48,
+    leaf: 0x53b84e,
+    leafLight: 0x70ca55,
+    leafPale: 0x89d765,
+    leafHighlight: 0x9de36a,
     carrot: 0xd78743,
     carrotLine: 0xad6434,
   },
