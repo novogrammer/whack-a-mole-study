@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="295" height="96" viewBox="0 0 295 96">
+  <!-- 少し不揃いな縁と下端の厚み。文字の背面は明るく保つ。 -->
+  <path fill="#88613e" d="M3 3 77 2 142 3 221 1 291 3 294 31 292 62 294 93 223 96 151 94 72 96 2 94 0 65 2 32Z"/>
+  <path fill="#d4ad75" d="M3 2 77 1 142 2 221 0 291 2 293 30 291 60 293 89 223 92 151 90 72 92 2 90 0 63 2 31Z"/>
+  <path d="m5 4 72-1 65 1 79-2 67 2" fill="none" stroke="#efcf96" stroke-width="2"/>
+  <path d="m4 87 68 2 79-2 72 2 67-3" fill="none" stroke="#b18752" stroke-width="2"/>
+  <g fill="none" stroke="#936637" stroke-linecap="round" opacity=".22">
+    <path d="M7 13c25-5 46 3 71 0s46-3 66-1M176 12c31 4 65-5 111 0"/>
+    <path d="M8 18c22-4 41 2 57 0M232 18c21-2 38-2 55 0"/>
+    <path d="M6 40c9-5 16-4 22 0s17 5 28 3M7 48c11-4 15-3 22 0s15 4 22 3"/>
+    <path d="M7 73c29-4 47 4 75 0M109 80c26-3 45 1 65 0M212 77c22-4 45 4 76-1"/>
+    <path d="M9 83c28-3 43 2 58 0M239 83c17-2 34 1 49-2"/>
+    <path d="M262 49c8 1 11-7 19-6l8 1M262 59c9-1 12 6 20 5l7-1"/>
+    <ellipse cx="17" cy="44" rx="7" ry="3"/>
+    <ellipse cx="282" cy="54" rx="6" ry="4"/>
+  </g>
+  <g fill="none" stroke="#8b603b" stroke-linecap="round" opacity=".55">
+    <path d="m1 28 11 1-7 2M292 70l-12 2 10 1M59 91l6-5 12 1"/>
+  </g>
+</svg>

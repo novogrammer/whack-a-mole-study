@@ -3,7 +3,6 @@
 :root {
   --page-background: #e5e7eb;
   --content-background: #fff;
-  --sign-background: #d9bb87;
 }
 
 *,
@@ -61,6 +60,7 @@ body {
   text-align: center;
 
   @include global.sp-and-pc-block((
+    top: 40px,
     padding: 12px 56px,
   ));
 
@@ -68,7 +68,9 @@ body {
     content: "";
     position: absolute;
     z-index: -1;
-    background-color: var(--sign-background);
+    background-image: url("./assets/sign-board.svg");
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
 
     @include global.sp-and-pc-block((
       inset: 8px 40px,

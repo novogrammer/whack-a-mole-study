@@ -23,6 +23,31 @@ function drawLeaf(
   graphics.lineBetween(0, 0, tipX * 0.8, tipY * 0.8)
 }
 
+export function drawSignPosts(scene: Phaser.Scene) {
+  // 板はHTMLで柱の上端を覆い、柱は接地位置に合わせて野菜より手前に描く。
+  for (const x of [102, 273]) {
+    const post = scene.add.graphics({ x, y: 123 }).setDepth(206)
+    post.fillStyle(0x88613e)
+    post.fillRect(-5, 0, 10, 83)
+    post.fillStyle(0xb58a55)
+    post.fillRect(-5, 0, 7, 81)
+    post.lineStyle(1, 0xd4ad75, 0.65)
+    post.lineBetween(-3, 5, -3, 76)
+    post.lineStyle(1, 0x88613e, 0.5)
+    post.lineBetween(0, 25, 1, 52)
+    post.lineBetween(-1, 61, -1, 77)
+
+    const base = scene.add.graphics({ x, y: 206 }).setDepth(206)
+    base.fillStyle(0xad8455)
+    base.fillEllipse(0, 0, 21, 5)
+    base.fillStyle(GARDEN_COLORS.soil)
+    base.fillEllipse(0, 3, 26, 7)
+    drawLeaf(base, -9, -10, 2, 0x719354)
+    drawLeaf(base, 2, -14, 2, 0x829f5b)
+    drawLeaf(base, 9, -7, 2, 0x66864e)
+  }
+}
+
 export function drawGardenPlants(scene: Phaser.Scene) {
   // 空と緑の水平な境界に、低い茂みの輪郭を重ねる。
   const hedge = scene.add.graphics().setDepth(0)
