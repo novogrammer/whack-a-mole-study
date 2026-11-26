@@ -1,10 +1,10 @@
 import Phaser from 'phaser'
 import { HitEffect } from './HitEffect'
+import { GARDEN_COLORS, getGardenPathY } from './gardenBackground'
 
 const HIDDEN_OFFSET_Y = 90
 const VISIBLE_OFFSET_Y = -50
 const DISPLAY_SCALE = 0.75
-const GROUND_COLOR = 0xf7f3ea
 
 export class Mole {
   private readonly scene: Phaser.Scene
@@ -23,7 +23,7 @@ export class Mole {
 
     // 穴と同じ幅の地面を重ね、隣の穴へはみ出さず下半分の輪郭を保つ。
     const foreground = scene.add.graphics()
-    foreground.fillStyle(GROUND_COLOR)
+    foreground.fillStyle(GARDEN_COLORS.soil)
     foreground.beginPath()
     const frontEdge = hole.geom.getPoints(hole.smoothness)
       .slice(0, hole.smoothness / 2 + 1)
@@ -36,6 +36,19 @@ export class Mole {
     foreground.lineTo(-hole.width / 2, 260)
     foreground.closePath()
     foreground.fillPath()
+
+    // 手前の地面が道にかかる部分も、背景と同じ輪郭・色につなげる。
+    const pathEdge = Array.from({ length: 33 }, (_, index) => {
+      const localX = -hole.width / 2 + index / 32 * hole.width
+      const localY = (getGardenPathY(x + localX * DISPLAY_SCALE) - holeY) / DISPLAY_SCALE
+      return new Phaser.Math.Vector2(localX, Math.min(260, localY))
+    })
+    foreground.fillStyle(GARDEN_COLORS.path)
+    foreground.fillPoints([
+      ...pathEdge,
+      new Phaser.Math.Vector2(hole.width / 2, 260),
+      new Phaser.Math.Vector2(-hole.width / 2, 260),
+    ], true)
     this.container.add([hole, this.graphics, foreground])
 
     this.graphics.setInteractive({
