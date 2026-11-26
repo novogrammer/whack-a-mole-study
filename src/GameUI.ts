@@ -1,5 +1,6 @@
 export class GameUI {
   private screen: 'ready' | 'intro' | 'playing' | 'ending' | 'result' = 'ready'
+  private readonly root: HTMLElement
   private readonly notice: HTMLElement
   private readonly ready: HTMLElement
   private readonly hud: HTMLElement
@@ -11,6 +12,7 @@ export class GameUI {
   private readonly finalScore: HTMLElement
 
   constructor(root: HTMLElement) {
+    this.root = root
     this.notice = root.querySelector<HTMLElement>('#play-notice')!
     this.ready = root.querySelector<HTMLElement>('#ready')!
     this.hud = root.querySelector<HTMLElement>('#hud')!
@@ -38,7 +40,7 @@ export class GameUI {
   }
 
   showReady() {
-    this.screen = 'ready'
+    this.setScreen('ready')
     this.ready.hidden = false
     this.hud.hidden = true
     this.result.hidden = true
@@ -49,7 +51,7 @@ export class GameUI {
   }
 
   showPlaying(durationMs: number) {
-    this.screen = 'playing'
+    this.setScreen('playing')
     this.ready.hidden = true
     this.hud.hidden = false
     this.result.hidden = true
@@ -61,7 +63,7 @@ export class GameUI {
   }
 
   showIntro() {
-    this.screen = 'intro'
+    this.setScreen('intro')
     this.ready.hidden = true
     this.hud.hidden = true
     this.result.hidden = true
@@ -76,7 +78,7 @@ export class GameUI {
   }
 
   showEnding() {
-    this.screen = 'ending'
+    this.setScreen('ending')
     this.hud.hidden = true
     this.notice.textContent = '終了'
     this.notice.hidden = false
@@ -92,7 +94,7 @@ export class GameUI {
   }
 
   showResult(score: number) {
-    this.screen = 'result'
+    this.setScreen('result')
     this.ready.hidden = true
     this.hud.hidden = true
     this.notice.hidden = true
@@ -102,5 +104,11 @@ export class GameUI {
     this.startButton.textContent = 'タイトルへ戻る'
     this.startButton.disabled = false
     this.result.focus({ preventScroll: true })
+  }
+
+  private setScreen(screen: typeof this.screen) {
+    this.screen = screen
+    this.root.dataset.touchScroll = screen === 'ready' || screen === 'result'
+      ? 'allowed' : 'blocked'
   }
 }

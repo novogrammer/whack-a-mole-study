@@ -11,6 +11,10 @@ new Phaser.Game({
   width: 750,
   height: 750,
   backgroundColor: '#f7f3ea',
+  input: {
+    touch: { capture: false },
+    mouse: { preventDefaultWheel: false },
+  },
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,

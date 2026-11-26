@@ -6,6 +6,7 @@ import { GameUI } from '../src/GameUI.ts'
 function setup() {
   const elements = new Map()
   const root = {
+    dataset: {},
     querySelector(selector) {
       const element = new EventTarget()
       Object.assign(element, { hidden: false, textContent: '', disabled: false, focus() {} })
@@ -13,17 +14,18 @@ function setup() {
       return element
     },
   }
-  return { ui: new GameUI(root), get: selector => elements.get(selector) }
+  return { ui: new GameUI(root), root, get: selector => elements.get(selector) }
 }
 
 test('結果からはタイトルへ戻り、次のスタート操作で再プレイする', () => {
-  const { ui, get } = setup()
+  const { ui, root, get } = setup()
   let starts = 0
   ui.onStart(() => {
     starts++
     ui.showPlaying(32_000)
   })
   ui.showReady()
+  assert.equal(root.dataset.touchScroll, 'allowed')
   assert.equal(get('#ready').hidden, false)
   assert.equal(get('#hud').hidden, true)
   assert.equal(get('#result').hidden, true)
@@ -31,6 +33,7 @@ test('結果からはタイトルへ戻り、次のスタート操作で再プ�
 
   get('#start-challenge').dispatchEvent(new Event('click'))
   assert.equal(starts, 1)
+  assert.equal(root.dataset.touchScroll, 'blocked')
   assert.equal(get('#ready').hidden, true)
   assert.equal(get('#hud').hidden, false)
   assert.equal(get('.challenge-controls').hidden, true)
@@ -38,6 +41,7 @@ test('結果からはタイトルへ戻り、次のスタート操作で再プ�
   ui.updateScore(17)
   assert.equal(get('#score').textContent, '17')
   ui.showResult(17)
+  assert.equal(root.dataset.touchScroll, 'allowed')
   assert.equal(get('#hud').hidden, true)
   assert.equal(get('#result').hidden, false)
   assert.equal(get('#final-score').textContent, '17')
@@ -46,6 +50,7 @@ test('結果からはタイトルへ戻り、次のスタート操作で再プ�
 
   get('#start-challenge').dispatchEvent(new Event('click'))
   assert.equal(starts, 1, 'タイトルへ戻る操作ではプレイを開始しない')
+  assert.equal(root.dataset.touchScroll, 'allowed')
   assert.equal(get('#ready').hidden, false)
   assert.equal(get('#hud').hidden, true)
   assert.equal(get('#result').hidden, true)
@@ -53,6 +58,7 @@ test('結果からはタイトルへ戻り、次のスタート操作で再プ�
 
   get('#start-challenge').dispatchEvent(new Event('click'))
   assert.equal(starts, 2)
+  assert.equal(root.dataset.touchScroll, 'blocked')
   assert.equal(get('#score').textContent, '0')
   assert.equal(get('#remaining-time').textContent, '32')
   assert.equal(get('#result').hidden, true)
@@ -78,10 +84,11 @@ test('開始操作のリスナーを解除できる', () => {
 })
 
 test('イントロと終了表示では開始操作を受け付けず、結果への切り替えで案内を消す', () => {
-  const { ui, get } = setup()
+  const { ui, root, get } = setup()
   let starts = 0
   ui.onStart(() => starts++)
   ui.showIntro()
+  assert.equal(root.dataset.touchScroll, 'blocked')
   ui.updateIntro('3')
   assert.equal(get('#play-notice').textContent, '3')
   assert.equal(get('#hud').hidden, true)
@@ -91,8 +98,10 @@ test('イントロと終了表示では開始操作を受け付けず、結果�
   assert.equal(starts, 0)
 
   ui.showPlaying(32_000)
+  assert.equal(root.dataset.touchScroll, 'blocked')
   assert.equal(get('#play-notice').hidden, true)
   ui.showEnding()
+  assert.equal(root.dataset.touchScroll, 'blocked')
   assert.equal(get('#play-notice').textContent, '終了')
   assert.equal(get('#play-notice').hidden, false)
   assert.equal(get('#hud').hidden, true)
@@ -100,9 +109,11 @@ test('イントロと終了表示では開始操作を受け付けず、結果�
   assert.equal(starts, 0)
 
   ui.showResult(20)
+  assert.equal(root.dataset.touchScroll, 'allowed')
   assert.equal(get('#play-notice').hidden, true)
   assert.equal(get('#result').hidden, false)
   ui.showReady()
+  assert.equal(root.dataset.touchScroll, 'allowed')
   assert.equal(get('#play-notice').hidden, true)
   assert.equal(get('#ready').hidden, false)
 })

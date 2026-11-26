@@ -31,6 +31,10 @@ body {
   min-height: 100svh;
   margin-inline: auto;
   background-color: var(--content-background);
+
+  &[data-touch-scroll="blocked"] {
+    touch-action: none;
+  }
 }
 
 .game-header {
