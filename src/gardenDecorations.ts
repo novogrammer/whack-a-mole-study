@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
-import { GARDEN_COLORS, getGardenPathY } from './gardenBackground'
+import { getGardenPathY } from './gardenBackground'
+import { COLORS } from './colors'
 
 function drawLeaf(
   graphics: Phaser.GameObjects.Graphics,
@@ -19,7 +20,7 @@ function drawLeaf(
     new Phaser.Math.Vector2(tipX / 2 - sideX, tipY / 2 - sideY), root)
   graphics.fillStyle(color)
   graphics.fillPoints([...left.getPoints(12), ...right.getPoints(12)], true)
-  graphics.lineStyle(1, 0x536e43, 0.55)
+  graphics.lineStyle(1, COLORS.plants.vein, 0.55)
   graphics.lineBetween(0, 0, tipX * 0.8, tipY * 0.8)
 }
 
@@ -27,31 +28,31 @@ export function drawSignPosts(scene: Phaser.Scene) {
   // 板はHTMLで柱の上端を覆い、柱は接地位置に合わせて野菜より手前に描く。
   for (const x of [102, 273]) {
     const post = scene.add.graphics({ x, y: 123 }).setDepth(206)
-    post.fillStyle(0x88613e)
+    post.fillStyle(COLORS.signPost.edge)
     post.fillRect(-5, 0, 10, 83)
-    post.fillStyle(0xb58a55)
+    post.fillStyle(COLORS.signPost.face)
     post.fillRect(-5, 0, 7, 81)
-    post.lineStyle(1, 0xd4ad75, 0.65)
+    post.lineStyle(1, COLORS.signPost.highlight, 0.65)
     post.lineBetween(-3, 5, -3, 76)
-    post.lineStyle(1, 0x88613e, 0.5)
+    post.lineStyle(1, COLORS.signPost.edge, 0.5)
     post.lineBetween(0, 25, 1, 52)
     post.lineBetween(-1, 61, -1, 77)
 
     const base = scene.add.graphics({ x, y: 206 }).setDepth(206)
-    base.fillStyle(0xad8455)
+    base.fillStyle(COLORS.garden.soilClump)
     base.fillEllipse(0, 0, 21, 5)
-    base.fillStyle(GARDEN_COLORS.soil)
+    base.fillStyle(COLORS.garden.soil)
     base.fillEllipse(0, 3, 26, 7)
-    drawLeaf(base, -9, -10, 2, 0x719354)
-    drawLeaf(base, 2, -14, 2, 0x829f5b)
-    drawLeaf(base, 9, -7, 2, 0x66864e)
+    drawLeaf(base, -9, -10, 2, COLORS.plants.leaf)
+    drawLeaf(base, 2, -14, 2, COLORS.plants.leafLight)
+    drawLeaf(base, 9, -7, 2, COLORS.plants.leafDark)
   }
 }
 
 export function drawGardenPlants(scene: Phaser.Scene) {
   // 空と緑の水平な境界に、低い茂みの輪郭を重ねる。
   const hedge = scene.add.graphics().setDepth(0)
-  hedge.fillStyle(0x86a16e)
+  hedge.fillStyle(COLORS.plants.hedge)
   for (const [x, y, width, height] of [
     [8, 79, 72, 42], [59, 82, 64, 35], [111, 81, 62, 30],
     [164, 85, 64, 33], [218, 82, 67, 28], [274, 81, 72, 38], [339, 80, 86, 43],
@@ -66,12 +67,12 @@ export function drawGardenPlants(scene: Phaser.Scene) {
   for (const plant of plants) {
     const leaves = scene.add.graphics({ x: plant.x, y: plant.y })
       .setScale(plant.scale).setDepth(plant.y)
-    drawLeaf(leaves, -25, -43, 12, 0x66864e)
-    drawLeaf(leaves, 23, -40, 13, 0x719354)
-    drawLeaf(leaves, -8, -65, 12, 0x829f5b)
-    drawLeaf(leaves, -31, -23, 11, 0x91aa66)
-    drawLeaf(leaves, 29, -24, 12, 0x9ab36b)
-    leaves.fillStyle(0x536e43)
+    drawLeaf(leaves, -25, -43, 12, COLORS.plants.leafDark)
+    drawLeaf(leaves, 23, -40, 13, COLORS.plants.leaf)
+    drawLeaf(leaves, -8, -65, 12, COLORS.plants.leafLight)
+    drawLeaf(leaves, -31, -23, 11, COLORS.plants.leafPale)
+    drawLeaf(leaves, 29, -24, 12, COLORS.plants.leafHighlight)
+    leaves.fillStyle(COLORS.plants.vein)
     leaves.fillEllipse(0, -2, 13, 6)
   }
 }
@@ -93,9 +94,9 @@ export function drawGardenStones(scene: Phaser.Scene, holes: readonly { x: numbe
 
     const graphics = scene.add.graphics({ x: stone.x, y: stone.y }).setDepth(stone.y)
     const halfWidth = stone.width / 2
-    graphics.fillStyle(0x80684d, 0.25)
+    graphics.fillStyle(COLORS.garden.shadow, 0.25)
     graphics.fillEllipse(0, 1, stone.width + 3, 3)
-    graphics.fillStyle(0x958b76)
+    graphics.fillStyle(COLORS.stone.base)
     graphics.fillPoints([
       new Phaser.Math.Vector2(-halfWidth, 0),
       new Phaser.Math.Vector2(-halfWidth * 0.6, -4),
@@ -103,7 +104,7 @@ export function drawGardenStones(scene: Phaser.Scene, holes: readonly { x: numbe
       new Phaser.Math.Vector2(halfWidth, -1),
       new Phaser.Math.Vector2(halfWidth * 0.5, 1),
     ], true)
-    graphics.lineStyle(1, 0xbeb09a)
+    graphics.lineStyle(1, COLORS.stone.highlight)
     graphics.lineBetween(-halfWidth * 0.5, -3, halfWidth * 0.3, -4)
   }
 }
@@ -111,7 +112,7 @@ export function drawGardenStones(scene: Phaser.Scene, holes: readonly { x: numbe
 export function drawGardenExtras(scene: Phaser.Scene) {
   // 雲は背景の上、植物より奥。タイトルの中央は空ける。
   const clouds = scene.add.graphics().setDepth(-0.5)
-  clouds.fillStyle(0xfffbef, 0.7)
+  clouds.fillStyle(COLORS.garden.cloud, 0.7)
   for (const cloud of [{ x: 30, y: 25, scale: 0.85 }, { x: 328, y: 18, scale: 1 }]) {
     clouds.fillEllipse(cloud.x, cloud.y, 52 * cloud.scale, 12 * cloud.scale)
     clouds.fillEllipse(cloud.x - 10 * cloud.scale, cloud.y - 5, 23 * cloud.scale, 18 * cloud.scale)
@@ -132,20 +133,20 @@ export function drawGardenExtras(scene: Phaser.Scene) {
   for (const carrot of carrots) {
     const graphics = scene.add.graphics({ x: carrot.x, y: carrot.y })
       .setScale(carrot.scale).setDepth(carrot.y)
-    graphics.fillStyle(0x997447)
+    graphics.fillStyle(COLORS.garden.soilDark)
     graphics.fillEllipse(0, 0, 22, 6)
-    graphics.fillStyle(0xd78743)
+    graphics.fillStyle(COLORS.plants.carrot)
     graphics.fillEllipse(0, -3, 15, 12)
-    graphics.lineStyle(1, 0xad6434)
+    graphics.lineStyle(1, COLORS.plants.carrotLine)
     graphics.lineBetween(-5, -3, -1, -2)
-    graphics.fillStyle(GARDEN_COLORS.soil)
+    graphics.fillStyle(COLORS.garden.soil)
     graphics.fillEllipse(0, 5, 27, 10)
-    graphics.fillStyle(0xad8455)
+    graphics.fillStyle(COLORS.garden.soilClump)
     graphics.fillEllipse(-6, 1, 6, 3)
     graphics.fillEllipse(6, 2, 8, 4)
-    drawLeaf(graphics, -13, -27, 7, 0x66864e)
-    drawLeaf(graphics, 2, -34, 6, 0x829f5b)
-    drawLeaf(graphics, 14, -23, 7, 0x719354)
+    drawLeaf(graphics, -13, -27, 7, COLORS.plants.leafDark)
+    drawLeaf(graphics, 2, -34, 6, COLORS.plants.leafLight)
+    drawLeaf(graphics, 14, -23, 7, COLORS.plants.leaf)
   }
 
   // 畑と道の境界に低い丸太を置く。手前のモグラよりも前面に描く。
@@ -155,16 +156,16 @@ export function drawGardenExtras(scene: Phaser.Scene) {
     const length = right - left
     const angle = Math.atan2(getGardenPathY(right) - getGardenPathY(left), length)
     const timber = scene.add.graphics({ x, y }).setRotation(angle).setDepth(y)
-    timber.fillStyle(0x80684d, 0.18)
+    timber.fillStyle(COLORS.garden.shadow, 0.18)
     timber.fillEllipse(0, 5, length + 5, 9)
-    timber.fillStyle(0x977347)
+    timber.fillStyle(COLORS.timber.base)
     timber.fillRoundedRect(-length / 2, -6, length, 12, 5)
-    timber.lineStyle(1.5, 0xb69360)
+    timber.lineStyle(1.5, COLORS.timber.highlight)
     timber.lineBetween(-length / 2 + 7, -3, length / 2 - 6, -3)
-    timber.lineStyle(1, 0x735638, 0.6)
+    timber.lineStyle(1, COLORS.timber.grain, 0.6)
     timber.lineBetween(-length / 2 + 12, 2, -length / 2 + 31, 1)
     timber.lineBetween(length / 2 - 35, 1, length / 2 - 13, 2)
-    timber.fillStyle(0xc09c68)
+    timber.fillStyle(COLORS.timber.end)
     timber.fillEllipse(length / 2 - 4, 0, 6, 9)
   }
 
@@ -175,7 +176,7 @@ export function drawGardenExtras(scene: Phaser.Scene) {
   ]) {
     const graphics = scene.add.graphics({ x: footprint.x, y: footprint.y })
       .setRotation(footprint.angle).setDepth(footprint.y)
-    graphics.fillStyle(0xa88a60, 0.35)
+    graphics.fillStyle(COLORS.garden.footprint, 0.35)
     graphics.fillEllipse(0, 0, 7, 5)
     graphics.fillCircle(-3, -5, 1.4)
     graphics.fillCircle(0, -6, 1.5)

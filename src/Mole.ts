@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { HitEffect } from './HitEffect'
-import { GARDEN_COLORS, getGardenPathY } from './gardenBackground'
+import { getGardenPathY } from './gardenBackground'
+import { COLORS } from './colors'
 
 const HIDDEN_OFFSET_Y = 90
 const VISIBLE_OFFSET_Y = -50
@@ -17,13 +18,13 @@ export class Mole {
   constructor(scene: Phaser.Scene, x: number, holeY: number) {
     this.scene = scene
     this.container = scene.add.container(x, holeY).setScale(DISPLAY_SCALE).setDepth(holeY)
-    const hole = scene.add.ellipse(0, 0, 166, 40, 0x594336)
+    const hole = scene.add.ellipse(0, 0, 166, 40, COLORS.garden.hole)
     this.graphics = scene.add.graphics({ x: 0, y: HIDDEN_OFFSET_Y })
     this.drawMole(this.graphics)
 
     // 穴と同じ幅の地面を重ね、隣の穴へはみ出さず下半分の輪郭を保つ。
     const foreground = scene.add.graphics()
-    foreground.fillStyle(GARDEN_COLORS.soil)
+    foreground.fillStyle(COLORS.garden.soil)
     foreground.beginPath()
     const frontEdge = hole.geom.getPoints(hole.smoothness)
       .slice(0, hole.smoothness / 2 + 1)
@@ -43,7 +44,7 @@ export class Mole {
       const localY = (getGardenPathY(x + localX * DISPLAY_SCALE) - holeY) / DISPLAY_SCALE
       return new Phaser.Math.Vector2(localX, Math.min(260, localY))
     })
-    foreground.fillStyle(GARDEN_COLORS.path)
+    foreground.fillStyle(COLORS.garden.path)
     foreground.fillPoints([
       ...pathEdge,
       new Phaser.Math.Vector2(hole.width / 2, 260),
@@ -148,16 +149,16 @@ export class Mole {
 
   private drawMole(mole: Phaser.GameObjects.Graphics, isHit = false) {
     mole.clear()
-    mole.fillStyle(0xa97852)
+    mole.fillStyle(COLORS.mole.body)
     // 顔はそのままに、下へ続く胴体を先に描く。
     mole.fillEllipse(0, 65, 96, 150)
     mole.fillCircle(-38, -28, 16)
     mole.fillCircle(38, -28, 16)
     mole.fillEllipse(0, 0, 108, 128)
-    mole.fillStyle(0xe9c49b)
+    mole.fillStyle(COLORS.mole.muzzle)
     mole.fillEllipse(0, 7, 70, 42)
-    mole.fillStyle(0x30251e)
-    mole.lineStyle(3, 0x30251e)
+    mole.fillStyle(COLORS.mole.face)
+    mole.lineStyle(3, COLORS.mole.face)
 
     if (isHit) {
       for (const eyeX of [-19, 19]) {

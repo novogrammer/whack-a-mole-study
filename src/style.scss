@@ -1,10 +1,5 @@
 @use "./global";
 
-:root {
-  --page-background: #e5e7eb;
-  --content-background: #fff;
-}
-
 *,
 *::before,
 *::after {
@@ -14,7 +9,7 @@
 body {
   margin: 0;
   background-color: var(--page-background);
-  color: #30251e;
+  color: var(--text-color);
   font-family: "M PLUS Rounded 1c", sans-serif;
   font-weight: 700;
 }
@@ -186,8 +181,8 @@ body {
   ));
 
   border: 0;
-  background-color: #594336;
-  color: #fff;
+  background-color: var(--button-background);
+  color: var(--button-text);
   font-family: inherit;
   font-weight: inherit;
   line-height: 1.5;
@@ -199,7 +194,7 @@ body {
   }
 
   &:focus-visible {
-    outline: 3px solid #a97852;
+    outline: 3px solid var(--focus-color);
     outline-offset: 3px;
   }
 }

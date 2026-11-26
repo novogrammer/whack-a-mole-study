@@ -1,7 +1,12 @@
 import Phaser from 'phaser'
 import { ChallengeScene } from './ChallengeScene'
 import { GameUI } from './GameUI'
+import { COLORS, toCssColor } from './colors'
 import './style.scss'
+
+for (const [name, color] of Object.entries(COLORS.ui)) {
+  document.documentElement.style.setProperty(`--${name}`, toCssColor(color))
+}
 
 const ui = new GameUI(document.querySelector<HTMLElement>('#app')!)
 
@@ -10,7 +15,7 @@ new Phaser.Game({
   parent: 'game',
   width: 750,
   height: 1200,
-  backgroundColor: '#f7f3ea',
+  backgroundColor: COLORS.canvasBackground,
   input: {
     touch: { capture: false },
     mouse: { preventDefaultWheel: false },
