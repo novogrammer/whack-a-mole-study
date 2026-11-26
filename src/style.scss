@@ -15,7 +15,8 @@ body {
   margin: 0;
   background-color: var(--page-background);
   color: #30251e;
-  font-family: system-ui, sans-serif;
+  font-family: "M PLUS Rounded 1c", sans-serif;
+  font-weight: 700;
 }
 
 [hidden] {
@@ -187,7 +188,8 @@ body {
   border: 0;
   background-color: #594336;
   color: #fff;
-  font-family: system-ui, sans-serif;
+  font-family: inherit;
+  font-weight: inherit;
   line-height: 1.5;
   cursor: pointer;
 
