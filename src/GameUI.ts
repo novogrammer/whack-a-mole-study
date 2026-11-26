@@ -69,7 +69,7 @@ export class GameUI {
     this.result.hidden = true
     this.controls.style.visibility = 'hidden'
     this.startButton.disabled = true
-    this.notice.textContent = '準備'
+    this.notice.textContent = 'よーい'
     this.notice.hidden = false
   }
 

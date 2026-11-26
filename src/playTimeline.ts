@@ -12,5 +12,5 @@ export function getPlayStage(elapsedMs: number, gameDurationMs: number): PlaySta
 
 export function getIntroMessage(elapsedMs: number): string {
   const seconds = Math.floor(elapsedMs / 1_000)
-  return seconds === 0 ? '準備' : String(Math.max(1, 4 - seconds))
+  return seconds === 0 ? 'よーい' : String(Math.max(1, 4 - seconds))
 }
