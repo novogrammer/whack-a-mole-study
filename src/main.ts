@@ -9,7 +9,7 @@ new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'game',
   width: 750,
-  height: 750,
+  height: 1200,
   backgroundColor: '#f7f3ea',
   input: {
     touch: { capture: false },

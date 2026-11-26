@@ -9,7 +9,7 @@ function setup() {
     dataset: {},
     querySelector(selector) {
       const element = new EventTarget()
-      Object.assign(element, { hidden: false, textContent: '', disabled: false, focus() {} })
+      Object.assign(element, { hidden: false, style: {}, textContent: '', disabled: false, focus() {} })
       elements.set(selector, element)
       return element
     },
@@ -30,13 +30,14 @@ test('結果からはタイトルへ戻り、次のスタート操作で再プ�
   assert.equal(get('#hud').hidden, true)
   assert.equal(get('#result').hidden, true)
   assert.equal(get('#start-challenge').disabled, false)
+  assert.equal(get('.challenge-controls').style.visibility, 'visible')
 
   get('#start-challenge').dispatchEvent(new Event('click'))
   assert.equal(starts, 1)
   assert.equal(root.dataset.touchScroll, 'blocked')
   assert.equal(get('#ready').hidden, true)
   assert.equal(get('#hud').hidden, false)
-  assert.equal(get('.challenge-controls').hidden, true)
+  assert.equal(get('.challenge-controls').style.visibility, 'hidden')
   assert.equal(get('#remaining-time').textContent, '32')
   ui.updateScore(17)
   assert.equal(get('#score').textContent, '17')
@@ -45,7 +46,7 @@ test('結果からはタイトルへ戻り、次のスタート操作で再プ�
   assert.equal(get('#hud').hidden, true)
   assert.equal(get('#result').hidden, false)
   assert.equal(get('#final-score').textContent, '17')
-  assert.equal(get('.challenge-controls').hidden, false)
+  assert.equal(get('.challenge-controls').style.visibility, 'visible')
   assert.equal(get('#start-challenge').textContent, 'タイトルへ戻る')
 
   get('#start-challenge').dispatchEvent(new Event('click'))
@@ -55,6 +56,7 @@ test('結果からはタイトルへ戻り、次のスタート操作で再プ�
   assert.equal(get('#hud').hidden, true)
   assert.equal(get('#result').hidden, true)
   assert.equal(get('#start-challenge').textContent, 'スタート')
+  assert.equal(get('.challenge-controls').style.visibility, 'visible')
 
   get('#start-challenge').dispatchEvent(new Event('click'))
   assert.equal(starts, 2)
@@ -93,7 +95,7 @@ test('イントロと終了表示では開始操作を受け付けず、結果�
   assert.equal(get('#play-notice').textContent, '3')
   assert.equal(get('#hud').hidden, true)
   assert.equal(get('#ready').hidden, true)
-  assert.equal(get('.challenge-controls').hidden, true)
+  assert.equal(get('.challenge-controls').style.visibility, 'hidden')
   get('#start-challenge').dispatchEvent(new Event('click'))
   assert.equal(starts, 0)
 
@@ -101,6 +103,7 @@ test('イントロと終了表示では開始操作を受け付けず、結果�
   assert.equal(root.dataset.touchScroll, 'blocked')
   assert.equal(get('#play-notice').hidden, true)
   ui.showEnding()
+  assert.equal(get('.challenge-controls').style.visibility, 'hidden')
   assert.equal(root.dataset.touchScroll, 'blocked')
   assert.equal(get('#play-notice').textContent, '終了')
   assert.equal(get('#play-notice').hidden, false)

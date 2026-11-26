@@ -7,30 +7,34 @@
   </head>
   <body>
     <main id="app">
-      <div class="game-header">
-        <p id="play-notice" class="play-notice" hidden></p>
-        <section id="ready" class="screen-panel" aria-labelledby="game-title">
-          <h1 id="game-title">モグラたたき</h1>
-          <p>出てきたモグラをタップ！</p>
-        </section>
-        <dl id="hud" class="game-hud" hidden>
-          <div>
-            <dt>残り時間</dt>
-            <dd><span id="remaining-time">32</span><span class="unit">秒</span></dd>
+      <div class="game-screen">
+        <div id="game" role="img" aria-label="9マスに配置した仮のモグラ"></div>
+        <div class="game-ui">
+          <div class="game-header">
+            <p id="play-notice" class="play-notice" hidden></p>
+            <section id="ready" class="screen-panel" aria-labelledby="game-title">
+              <h1 id="game-title">モグラたたき</h1>
+              <p>出てきたモグラをタップ！</p>
+            </section>
+            <dl id="hud" class="game-hud" hidden>
+              <div>
+                <dt>残り時間</dt>
+                <dd><span id="remaining-time">32</span><span class="unit">秒</span></dd>
+              </div>
+              <div>
+                <dt>スコア</dt>
+                <dd><span id="score">0</span><span class="unit">点</span></dd>
+              </div>
+            </dl>
+            <section id="result" class="screen-panel" aria-labelledby="result-title" tabindex="-1" hidden>
+              <h2 id="result-title">結果</h2>
+              <p class="result-score"><span id="final-score">0</span><span class="unit">点</span></p>
+            </section>
           </div>
-          <div>
-            <dt>スコア</dt>
-            <dd><span id="score">0</span><span class="unit">点</span></dd>
+          <div class="challenge-controls">
+            <button id="start-challenge" type="button" disabled>スタート</button>
           </div>
-        </dl>
-        <section id="result" class="screen-panel" aria-labelledby="result-title" tabindex="-1" hidden>
-          <h2 id="result-title">結果</h2>
-          <p class="result-score"><span id="final-score">0</span><span class="unit">点</span></p>
-        </section>
-      </div>
-      <div id="game" role="img" aria-label="9マスに配置した仮のモグラ"></div>
-      <div class="challenge-controls">
-        <button id="start-challenge" type="button" disabled>スタート</button>
+        </div>
       </div>
       <footer class="site-footer">
         <a href="https://github.com/novogrammer/whack-a-mole-study">GitHubリポジトリ</a>

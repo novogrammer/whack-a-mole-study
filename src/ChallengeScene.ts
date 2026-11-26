@@ -19,7 +19,7 @@ const HIT_HOLD_DURATION_MS = 120
 
 const MOLE_POSITIONS = Array.from({ length: 9 }, (_, index) => ({
   x: 62.5 + (index % 3) * 125,
-  y: 145 + Math.floor(index / 3) * 75,
+  y: 112 + 145 + Math.floor(index / 3) * 75,
 }))
 
 export class ChallengeScene extends Phaser.Scene implements ChallengeContext {
@@ -44,7 +44,7 @@ export class ChallengeScene extends Phaser.Scene implements ChallengeContext {
   }
 
   create() {
-    // 描画は750px、ゲーム内の座標は375px基準を保つ。
+    // 描画は750×1200px、ゲーム内の座標は375×600px基準を保つ。
     this.cameras.main.setOrigin(0, 0).setZoom(this.scale.width / 375)
     this.moles = MOLE_POSITIONS.map(({ x, y }) => new Mole(this, x, y))
     this.challenges = []

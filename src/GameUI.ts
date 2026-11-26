@@ -45,7 +45,7 @@ export class GameUI {
     this.hud.hidden = true
     this.result.hidden = true
     this.notice.hidden = true
-    this.controls.hidden = false
+    this.controls.style.visibility = 'visible'
     this.startButton.textContent = 'スタート'
     this.startButton.disabled = false
   }
@@ -56,7 +56,7 @@ export class GameUI {
     this.hud.hidden = false
     this.result.hidden = true
     this.notice.hidden = true
-    this.controls.hidden = true
+    this.controls.style.visibility = 'hidden'
     this.startButton.disabled = true
     this.updateScore(0)
     this.updateRemainingTime(durationMs)
@@ -67,7 +67,7 @@ export class GameUI {
     this.ready.hidden = true
     this.hud.hidden = true
     this.result.hidden = true
-    this.controls.hidden = true
+    this.controls.style.visibility = 'hidden'
     this.startButton.disabled = true
     this.notice.textContent = '準備'
     this.notice.hidden = false
@@ -100,7 +100,7 @@ export class GameUI {
     this.notice.hidden = true
     this.result.hidden = false
     this.finalScore.textContent = String(score)
-    this.controls.hidden = false
+    this.controls.style.visibility = 'visible'
     this.startButton.textContent = 'タイトルへ戻る'
     this.startButton.disabled = false
     this.result.focus({ preventScroll: true })
