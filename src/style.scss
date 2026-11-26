@@ -3,6 +3,7 @@
 :root {
   --page-background: #e5e7eb;
   --content-background: #fff;
+  --sign-background: #d9bb87;
 }
 
 *,
@@ -52,14 +53,27 @@ body {
 }
 
 .game-header {
+  position: relative;
+  isolation: isolate;
   grid-row: 1;
   display: grid;
   align-items: center;
   text-align: center;
 
   @include global.sp-and-pc-block((
-    padding: 12px 24px,
+    padding: 12px 56px,
   ));
+
+  &::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    background-color: var(--sign-background);
+
+    @include global.sp-and-pc-block((
+      inset: 8px 40px,
+    ));
+  }
 }
 
 .screen-panel {
@@ -88,17 +102,20 @@ body {
 }
 
 .game-hud {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  justify-content: space-around;
   margin: 0;
-  text-align: left;
+
+  @include global.sp-and-pc-block((grid-template-columns: 64px 64px));
 
   dt {
+    text-align: center;
     @include global.sp-and-pc-block((font-size: 14px));
   }
 
   dd {
     margin: 0;
+    text-align: right;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
 
