@@ -6,4 +6,4 @@ Vite + TypeScript + Phaserで制作する、スマートフォン向けモグラ
 
 [ゲーム仕様](docs/game-spec.md)
 
-[BGM・SEの制作メモ](docs/audio-production-notes.md)
+[BGM・SEの作曲メモ](docs/audio-composition-notes.md)
